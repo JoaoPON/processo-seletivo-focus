@@ -1,0 +1,5 @@
+# Fase 0: servidor, configuração e acesso à planilha
+fastapi>=0.110
+uvicorn>=0.28.0
+python-dotenv>=1.0
+gspread>=6.0
