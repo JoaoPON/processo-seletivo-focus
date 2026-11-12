@@ -15,10 +15,10 @@ def conectar_planilha():
 
 def salvar_lead(dados: dict) -> str:
     planilha = conectar_planilha()
-    aba_leads = planilha.worksheet("Leads")
+    aba = planilha.worksheet("Leads")
 
-    lead_id = str(uuid.uuid4())
-    criado_em = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    lead_id = dados.get("id") or str(uuid.uuid4())
+    criado_em = dados.get("criado_em") or datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     linha = [
         lead_id,
@@ -41,5 +41,41 @@ def salvar_lead(dados: dict) -> str:
         dados.get("status_ia", "Pendente")
     ]
 
-    aba_leads.append_row(linha, value_input_option="RAW")
+    aba.append_row(linha, value_input_option="RAW")
     return lead_id
+
+
+def atualizar_lead(lead_id: str, dados_novos: dict) -> bool:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet("Leads")
+
+    celula = aba.find(lead_id, in_column=1)
+    if not celula:
+        return False
+
+    linha_num = celula.row
+    linha_atual = aba.row_values(linha_num)
+
+    nova_linha = [
+        lead_id,
+        linha_atual[1] if len(linha_atual) > 1 else "",
+        dados_novos.get("empresa", linha_atual[2] if len(linha_atual) > 2 else ""),
+        dados_novos.get("nome_completo", linha_atual[3] if len(linha_atual) > 3 else ""),
+        dados_novos.get("email", linha_atual[4] if len(linha_atual) > 4 else ""),
+        dados_novos.get("whatsapp", linha_atual[5] if len(linha_atual) > 5 else ""),
+        dados_novos.get("nicho", linha_atual[6] if len(linha_atual) > 6 else ""),
+        dados_novos.get("cidade", linha_atual[7] if len(linha_atual) > 7 else ""),
+        dados_novos.get("descricao", linha_atual[8] if len(linha_atual) > 8 else ""),
+        dados_novos.get("solucao_interesse", linha_atual[9] if len(linha_atual) > 9 else ""),
+        dados_novos.get("origem", linha_atual[10] if len(linha_atual) > 10 else "SITE"),
+        dados_novos.get("status", linha_atual[11] if len(linha_atual) > 11 else "Novo"),
+        dados_novos.get("responsavel_sdr", linha_atual[12] if len(linha_atual) > 12 else "SITE"),
+        dados_novos.get("prioridade_ia", linha_atual[13] if len(linha_atual) > 13 else ""),
+        dados_novos.get("indicador_intencao", linha_atual[14] if len(linha_atual) > 14 else ""),
+        dados_novos.get("justificativa_ia", linha_atual[15] if len(linha_atual) > 15 else ""),
+        dados_novos.get("sugestao_abordagem", linha_atual[16] if len(linha_atual) > 16 else ""),
+        dados_novos.get("status_ia", linha_atual[17] if len(linha_atual) > 17 else "Pendente")
+    ]
+
+    aba.update(range_name=f"A{linha_num}:R{linha_num}", values=[nova_linha])
+    return True

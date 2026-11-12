@@ -47,7 +47,7 @@ def main():
     linha = [""] * len(leads.row_values(1))
     linha[0] = novo_id
     linha[1] = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    linha[2] = "Teste PS-Focus (pode apagar)"
+    linha[2] = "Teste PS-Focus"
     linha[10] = "SDR"
     linha[11] = "Novo"
     leads.append_row(linha, value_input_option="RAW")

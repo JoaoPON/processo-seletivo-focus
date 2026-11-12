@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-app = FastAPI(title="LeadFlow")
+app = FastAPI(title="PS-Focus")
 
 
 @app.get("/health")
