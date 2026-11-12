@@ -1,4 +1,4 @@
-from backend.sheets import salvar_lead, atualizar_lead
+from backend.sheets import salvar_lead, atualizar_lead, deletar_lead
 
 print("1. Criando lead de teste na planilha...")
 novo_id = salvar_lead({
@@ -22,3 +22,13 @@ if sucesso:
     print("Sucesso.")
 else:
     print("Falha: ID não encontrado na planilha.")
+
+print("3. Deletando o lead...")
+sucesso = deletar_lead(novo_id)
+
+if sucesso:
+    print("Sucesso.")
+else:
+    print("Falha: ID não encontrado na planilha.")
+
+

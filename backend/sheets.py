@@ -79,3 +79,14 @@ def atualizar_lead(lead_id: str, dados_novos: dict) -> bool:
 
     aba.update(range_name=f"A{linha_num}:R{linha_num}", values=[nova_linha])
     return True
+
+
+def deletar_lead(lead_id: str) -> bool:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet("Leads")
+    celula = aba.find(lead_id, in_column=1)
+    if not celula:
+        return False
+    
+    aba.delete_rows(celula.row)
+    return True
