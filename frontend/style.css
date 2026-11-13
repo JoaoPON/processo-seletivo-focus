@@ -1,13 +1,77 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-*{
+/* Container fixo na margem esquerda */
+.side-tabs {
+    position: fixed;
+    left: 0;
+    top: 55px;
+    /* Alinhado próximo ao topo do dashboard */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+    /* Garante que fique por cima do dashboard ao abrir */
+}
+
+/* Botão recolhido (aparecendo só o pedacinho com o ícone) */
+.side-tab {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 44px;
+    /* Largura recolhida */
+    padding: 12px;
+    background-color: white;
+    color: #333;
+    border: none;
+    border-left: 4px solid transparent;
+    border-radius: 0 10px 10px 0;
+    /* Arredondado só na ponta direita */
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    /* Impede o texto de quebrar linha */
+    overflow: hidden;
+    /* Esconde o texto enquanto estiver recolhido */
+    cursor: pointer;
+    transition: width 0.3s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.side-tab svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    /* Impede o ícone de amassar */
+}
+
+/* Destaque da aba atual */
+.side-tab.active {
+    border-left-color: #eba919;
+}
+
+/* Animação ao passar o mouse */
+.side-tab:hover {
+    width: 155px;
+    /* Expande para mostrar o texto */
+    background-color: #fafafa;
+    border-left-color: #eba919;
+}
+
+
+
+
+
+
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: "Poppins", sans-serif;
 }
 
-body{
+body {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,7 +79,7 @@ body{
     background-color: silver;
 }
 
-.container{
+.container {
     width: 420px;
     background-color: white;
     border-radius: 10px;
@@ -23,20 +87,20 @@ body{
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-.container h1{
+.container h1 {
     font-size: 30px;
     text-align: center;
     margin-bottom: -5px;
 }
 
-.input-box{
+.input-box {
     position: relative;
     width: 100%;
     height: 50px;
     margin: 30px 0;
 }
 
-.input-box input{
+.input-box input {
     width: 100%;
     height: 100%;
     border: 2px solid silver;
@@ -45,27 +109,27 @@ body{
     padding: 20px 45px 20px 20px;
 }
 
-.forgot{
+.forgot {
     display: flex;
     justify-content: end;
     margin: -15px 0 15px;
 }
 
-.forgot label input{
+.forgot label input {
     accent-color: black;
     margin-right: 5px;
 }
 
-.forgot a{
+.forgot a {
     text-decoration: none;
     color: black;
 }
 
-.forgot a:hover{
+.forgot a:hover {
     text-decoration: underline;
 }
 
-.login{
+.login {
     width: 100%;
     height: 50px;
     background-color: white;
@@ -78,17 +142,186 @@ body{
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-.login:hover{
+.login:hover {
     background-color: silver;
 }
 
-.dashboard{
-    max-width: 900px;
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    color: #666;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.toggle-password:hover {
+    color: black;
+}
+
+.input-box input::-ms-reveal,
+.input-box input::-ms-clear {
+    display: none;
+}
+
+.main-layout {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
     width: 90%;
-    height: 90%;
-    margin: 50px auto;
+    height: calc(100vh - 80px);
+}
+
+.dashboard {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
     background-color: white;
     border-radius: 10px;
     padding: 30px 40px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    transition: all 0.3s ease;
+}
+
+.leads-details {
+    height: 100%;
+    overflow-y: auto;
+    display: none;
+    flex: 1;
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px 40px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.leads-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard h1 {
+    font-size: 20px;
+    text-align: left;
+
+}
+
+.leads-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.list {
+    border-radius: 5px;
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.new {
+    background-color: #eba919;
+    border-radius: 5px;
+    font-size: 13px;
+    padding: 8px 14px;
+}
+
+.search input {
+    width: 100%;
+    margin: 12px 0;
+    border-radius: 10px;
+    border: 2px solid silver;
+    font-size: 13px;
+    text-align: justify start;
+    padding: 8px 14px;
+}
+
+.select {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.select select {
+    width: 100%;
+    padding: 8px 14px;
+    border: 2px solid silver;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+}
+
+.client-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.client-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    height: auto;
+    flex-shrink: 0;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid silver;
+    border-radius: 0;
+    cursor: pointer;
+}
+
+.client-item:hover {
+    background-color: #f3f4f6;
+}
+
+.client-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgb(195, 238, 238);
+    color: rgb(63, 97, 97);
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.client-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    gap: 2px;
+}
+
+.client-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: black;
+}
+
+.client-sub {
+    font-size: 11px;
+    color: rgb(100, 100, 100);
+}
+
+.client-status {
+    background-color: #dcfce7;
+    color: #15803d;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
 }
