@@ -1,6 +1,7 @@
 import os
 import uuid
 from datetime import datetime, timezone
+from typing import Optional, List
 import gspread
 from dotenv import load_dotenv
 
@@ -9,9 +10,28 @@ load_dotenv()
 CREDENCIAL = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE", "credentials/service_account.json")
 PLANILHA_ID = os.getenv("SPREADSHEET_ID")
 
+COLUNAS_LEADS = [
+    "id", "criado_em", "empresa", "nome_completo", "email", "whatsapp",
+    "nicho", "cidade", "descricao", "solucao_interesse", "origem", "status",
+    "responsavel_sdr", "prioridade_ia", "indicador_intencao", "justificativa_ia",
+    "sugestao_abordagem", "status_ia"
+]
+
+
+
+
 def conectar_planilha():
     cliente = gspread.service_account(filename=CREDENCIAL)
     return cliente.open_by_key(PLANILHA_ID)
+
+def linha_para_dict(linha: list, colunas: list) -> dict:
+    dados = {}
+    for id, chave in enumerate(colunas):
+        dados[chave] = linha[id] if id < len(linha) else ""
+    return dados
+
+
+
 
 def salvar_lead(dados: dict) -> str:
     planilha = conectar_planilha()
@@ -90,3 +110,27 @@ def deletar_lead(lead_id: str) -> bool:
     
     aba.delete_rows(celula.row)
     return True
+
+
+def obter_lead(lead_id: str) -> Optional[dict]:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet("Leads")
+    celula = aba.find(lead_id, in_column=1)
+    if not celula:
+        return None
+
+    linha = aba.row_values(celula.row)
+    return linha_para_dict(linha, COLUNAS_LEADS)
+
+
+def listar_leads() -> List[dict]:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet("Leads")
+    todas_linhas = aba.get_all_values()
+
+    # Ignora o cabeçalho
+    if len(todas_linhas) <= 1:
+        return []
+
+    # Ignora o cabeçalho
+    return [linha_para_dict(linha, COLUNAS_LEADS) for linha in todas_linhas[1:]]
