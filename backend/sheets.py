@@ -17,120 +17,184 @@ COLUNAS_LEADS = [
     "sugestao_abordagem", "status_ia"
 ]
 
+COLUNAS_INTERACOES = [
+    "id", "id_lead", "acao", "pauta", "responsavel",  "data_agendada",
+    "hora_agendada", "data_realizada", "hora_realizada", "resultado", "observacoes"
+]
 
+COLUNAS_LISTAS = [
+    "nichos", "cidades", "membros", "origem", "status",
+    "acoes", "prioridade_ia", "status_ia", "resultado"
+]
 
 
 def conectar_planilha():
     cliente = gspread.service_account(filename=CREDENCIAL)
     return cliente.open_by_key(PLANILHA_ID)
 
+
 def linha_para_dict(linha: list, colunas: list) -> dict:
-    dados = {}
-    for id, chave in enumerate(colunas):
-        dados[chave] = linha[id] if id < len(linha) else ""
-    return dados
+    return {
+        chave: linha[idx] if idx < len(linha) else ""
+        for idx, chave in enumerate(colunas)
+    }
 
 
+def obter_lista(nome_coluna: str) -> List[str]:
+    if nome_coluna not in COLUNAS_LISTAS:
+        raise ValueError(f"Coluna '{nome_coluna}' inválida. Use uma de: {COLUNAS_LISTAS}")
 
-
-def salvar_lead(dados: dict) -> str:
     planilha = conectar_planilha()
-    aba = planilha.worksheet("Leads")
+    aba = planilha.worksheet("Listas")
 
-    lead_id = dados.get("id") or str(uuid.uuid4())
-    criado_em = dados.get("criado_em") or datetime.now(timezone.utc).isoformat(timespec="seconds")
+    indice_coluna = COLUNAS_LISTAS.index(nome_coluna) + 1
+    valores = aba.col_values(indice_coluna)
 
-    linha = [
-        lead_id,
-        criado_em,
-        dados.get("empresa", ""),
-        dados.get("nome_completo", ""),
-        dados.get("email", ""),
-        dados.get("whatsapp", ""),
-        dados.get("nicho", ""),
-        dados.get("cidade", ""),
-        dados.get("descricao", ""),
-        dados.get("solucao_interesse", ""),
-        dados.get("origem", "SITE"),
-        dados.get("status", "Novo"),
-        dados.get("responsavel_sdr", "SITE"),
-        dados.get("prioridade_ia", ""),
-        dados.get("indicador_intencao", ""),
-        dados.get("justificativa_ia", ""),
-        dados.get("sugestao_abordagem", ""),
-        dados.get("status_ia", "Pendente")
-    ]
+    return [item.strip() for item in valores[1:] if item.strip()]
 
+
+def obter_todas_listas() -> dict:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet("Listas")
+    todas_linhas = aba.get_all_values()
+
+    listas = {col: [] for col in COLUNAS_LISTAS}
+    if len(todas_linhas) <= 1:
+        return listas
+
+    for linha in todas_linhas[1:]:
+        for idx, col in enumerate(COLUNAS_LISTAS):
+            if idx < len(linha) and linha[idx].strip():
+                listas[col].append(linha[idx].strip())
+
+    return listas
+
+
+#  Funções Genéricas
+
+def criar_registro(nome_aba: str, colunas: list, dados: dict) -> str:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet(nome_aba)
+
+    registro_id = dados.get("id") or str(uuid.uuid4())
+    dados_completos = {**dados, "id": registro_id}
+
+    linha = [str(dados_completos.get(col, "")) for col in colunas]
     aba.append_row(linha, value_input_option="RAW")
-    return lead_id
+    return registro_id
 
 
-def atualizar_lead(lead_id: str, dados_novos: dict) -> bool:
+def listar_registros(nome_aba: str, colunas: list) -> List[dict]:
     planilha = conectar_planilha()
-    aba = planilha.worksheet("Leads")
+    aba = planilha.worksheet(nome_aba)
+    todas_linhas = aba.get_all_values()
 
-    celula = aba.find(lead_id, in_column=1)
-    if not celula:
-        return False
+    if len(todas_linhas) <= 1:
+        return []
 
-    linha_num = celula.row
-    linha_atual = aba.row_values(linha_num)
-
-    nova_linha = [
-        lead_id,
-        linha_atual[1] if len(linha_atual) > 1 else "",
-        dados_novos.get("empresa", linha_atual[2] if len(linha_atual) > 2 else ""),
-        dados_novos.get("nome_completo", linha_atual[3] if len(linha_atual) > 3 else ""),
-        dados_novos.get("email", linha_atual[4] if len(linha_atual) > 4 else ""),
-        dados_novos.get("whatsapp", linha_atual[5] if len(linha_atual) > 5 else ""),
-        dados_novos.get("nicho", linha_atual[6] if len(linha_atual) > 6 else ""),
-        dados_novos.get("cidade", linha_atual[7] if len(linha_atual) > 7 else ""),
-        dados_novos.get("descricao", linha_atual[8] if len(linha_atual) > 8 else ""),
-        dados_novos.get("solucao_interesse", linha_atual[9] if len(linha_atual) > 9 else ""),
-        dados_novos.get("origem", linha_atual[10] if len(linha_atual) > 10 else "SITE"),
-        dados_novos.get("status", linha_atual[11] if len(linha_atual) > 11 else "Novo"),
-        dados_novos.get("responsavel_sdr", linha_atual[12] if len(linha_atual) > 12 else "SITE"),
-        dados_novos.get("prioridade_ia", linha_atual[13] if len(linha_atual) > 13 else ""),
-        dados_novos.get("indicador_intencao", linha_atual[14] if len(linha_atual) > 14 else ""),
-        dados_novos.get("justificativa_ia", linha_atual[15] if len(linha_atual) > 15 else ""),
-        dados_novos.get("sugestao_abordagem", linha_atual[16] if len(linha_atual) > 16 else ""),
-        dados_novos.get("status_ia", linha_atual[17] if len(linha_atual) > 17 else "Pendente")
-    ]
-
-    aba.update(range_name=f"A{linha_num}:R{linha_num}", values=[nova_linha])
-    return True
+    return [linha_para_dict(linha, colunas) for linha in todas_linhas[1:]]
 
 
-def deletar_lead(lead_id: str) -> bool:
+def obter_registro(nome_aba: str, colunas: list, registro_id: str) -> Optional[dict]:
     planilha = conectar_planilha()
-    aba = planilha.worksheet("Leads")
-    celula = aba.find(lead_id, in_column=1)
-    if not celula:
-        return False
-    
-    aba.delete_rows(celula.row)
-    return True
+    aba = planilha.worksheet(nome_aba)
+    celula = aba.find(registro_id, in_column=1)
 
-
-def obter_lead(lead_id: str) -> Optional[dict]:
-    planilha = conectar_planilha()
-    aba = planilha.worksheet("Leads")
-    celula = aba.find(lead_id, in_column=1)
     if not celula:
         return None
 
     linha = aba.row_values(celula.row)
-    return linha_para_dict(linha, COLUNAS_LEADS)
+    return linha_para_dict(linha, colunas)
+
+
+def atualizar_registro(nome_aba: str, colunas: list, registro_id: str, dados_novos: dict) -> bool:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet(nome_aba)
+    celula = aba.find(registro_id, in_column=1)
+
+    if not celula:
+        return False
+
+    linha_num = celula.row
+    registro_atual = linha_para_dict(aba.row_values(linha_num), colunas)
+
+    for chave, valor in dados_novos.items():
+        if chave in registro_atual and chave != "id" and valor is not None:
+            registro_atual[chave] = str(valor)
+
+    nova_linha = [registro_atual.get(col, "") for col in colunas]
+    ultima_coluna = chr(64 + len(colunas))
+
+    aba.update(range_name=f"A{linha_num}:{ultima_coluna}{linha_num}", values=[nova_linha])
+    return True
+
+
+def deletar_registro(nome_aba: str, registro_id: str) -> bool:
+    planilha = conectar_planilha()
+    aba = planilha.worksheet(nome_aba)
+    celula = aba.find(registro_id, in_column=1)
+
+    if not celula:
+        return False
+
+    aba.delete_rows(celula.row)
+    return True
+
+
+
+
+# CRUD LEADS
+
+def salvar_lead(dados: dict) -> str:
+    dados_lead = {
+        "criado_em": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "origem": "SITE",
+        "status": "Novo",
+        "responsavel_sdr": "",
+        "status_ia": "Pendente",
+        **dados
+    }
+    return criar_registro("Leads", COLUNAS_LEADS, dados_lead)
 
 
 def listar_leads() -> List[dict]:
-    planilha = conectar_planilha()
-    aba = planilha.worksheet("Leads")
-    todas_linhas = aba.get_all_values()
+    return listar_registros("Leads", COLUNAS_LEADS)
 
-    # Ignora o cabeçalho
-    if len(todas_linhas) <= 1:
-        return []
 
-    # Ignora o cabeçalho
-    return [linha_para_dict(linha, COLUNAS_LEADS) for linha in todas_linhas[1:]]
+def obter_lead(lead_id: str) -> Optional[dict]:
+    return obter_registro("Leads", COLUNAS_LEADS, lead_id)
+
+
+def atualizar_lead(lead_id: str, dados_novos: dict) -> bool:
+    return atualizar_registro("Leads", COLUNAS_LEADS, lead_id, dados_novos)
+
+
+def deletar_lead(lead_id: str) -> bool:
+    return deletar_registro("Leads", lead_id)
+
+
+
+
+# CRUD INTERAÇÕES
+
+def salvar_interacao(dados: dict) -> str:
+    return criar_registro("Interacoes", COLUNAS_INTERACOES, dados)
+
+
+def listar_interacoes(id_lead: Optional[str] = None) -> List[dict]:
+    interacoes = listar_registros("Interacoes", COLUNAS_INTERACOES)
+    if id_lead:
+        return [item for item in interacoes if item["id_lead"] == id_lead]
+    return interacoes
+
+
+def obter_interacao(interacao_id: str) -> Optional[dict]:
+    return obter_registro("Interacoes", COLUNAS_INTERACOES, interacao_id)
+
+
+def atualizar_interacao(interacao_id: str, dados_novos: dict) -> bool:
+    return atualizar_registro("Interacoes", COLUNAS_INTERACOES, interacao_id, dados_novos)
+
+
+def deletar_interacao(interacao_id: str) -> bool:
+    return deletar_registro("Interacoes", interacao_id)
