@@ -1,69 +1,67 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
-/* Container fixo na margem esquerda */
-.side-tabs {
-    position: fixed;
-    left: 0;
-    top: 55px;
-    /* Alinhado próximo ao topo do dashboard */
+/*barra de navegação do dashboard*/
+.navbar {
+    align-items: center;
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 100;
-    /* Garante que fique por cima do dashboard ao abrir */
+    flex-direction: row;
+    gap: 8px;
+    width: 95%;
+    padding: 5px 15px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    margin: 10px;
 }
 
-/* Botão recolhido (aparecendo só o pedacinho com o ícone) */
-.side-tab {
+.navbar-acc {
     display: flex;
     align-items: center;
-    gap: 14px;
-    width: 44px;
-    /* Largura recolhida */
-    padding: 12px;
-    background-color: white;
-    color: #333;
-    border: none;
-    border-left: 4px solid transparent;
-    border-radius: 0 10px 10px 0;
-    /* Arredondado só na ponta direita */
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    /* Impede o texto de quebrar linha */
-    overflow: hidden;
-    /* Esconde o texto enquanto estiver recolhido */
-    cursor: pointer;
-    transition: width 0.3s ease, border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.side-tab svg {
-    width: 18px;
-    height: 18px;
+    justify-content: center;
     flex-shrink: 0;
-    /* Impede o ícone de amassar */
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 7px;
 }
 
-/* Destaque da aba atual */
-.side-tab.active {
-    border-left-color: #eba919;
+.navbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 12px;
+    padding: 10px 14px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #4a4a4a;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 
-/* Animação ao passar o mouse */
-.side-tab:hover {
-    width: 155px;
-    /* Expande para mostrar o texto */
-    background-color: #fafafa;
-    border-left-color: #eba919;
+.navbar-btn svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 
+.navbar-btn:hover:not(.active) {
+    background-color: #e0e3e6;
+    color: #1a1a1a;
+}
 
+.navbar-btn.active {
+    background-color: #eef5ff;
+    border-color: #0066ff;
+    color: #0066ff;
+    font-weight: 600;
+}
 
-
-
-
-
+/*padrão*/
 * {
     margin: 0;
     padding: 0;
@@ -73,12 +71,17 @@
 
 body {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    gap: 5px;
+    height: 100vh;
+    padding: 14px 0px;
+    overflow: hidden;
     background-color: silver;
 }
 
+/*tela de login*/
 .container {
     width: 420px;
     background-color: white;
@@ -169,16 +172,19 @@ body {
     display: none;
 }
 
+/*dashboard*/
 .main-layout {
     display: flex;
     justify-content: center;
     gap: 20px;
-    width: 90%;
+    width: 95%;
     height: calc(100vh - 80px);
 }
 
 .dashboard {
-    width: 100%;
+    flex: 1;
+    width: auto;
+    min-width: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -193,7 +199,8 @@ body {
     height: 100%;
     overflow-y: auto;
     display: none;
-    flex: 1;
+    flex: 2;
+    min-width: 0;
     background-color: white;
     border-radius: 10px;
     padding: 30px 40px;
@@ -237,7 +244,6 @@ body {
     border-radius: 10px;
     border: 2px solid silver;
     font-size: 13px;
-    text-align: justify start;
     padding: 8px 14px;
 }
 
@@ -298,6 +304,8 @@ body {
 }
 
 .client-info {
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -316,6 +324,15 @@ body {
     color: rgb(100, 100, 100);
 }
 
+.client-name, .client-sub {
+    display: block;
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .client-status {
     background-color: #dcfce7;
     color: #15803d;
@@ -324,4 +341,107 @@ body {
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.main-layout.split-view .dashboard {
+    min-width: 370px;
+    overflow-x: hidden;
+}
+
+.main-layout.split-view .leads-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.client-item.selected {
+    background-color: #eef5ff;
+    border-left: 4px solid #0066ff;
+}
+
+/* 3. Botão > da faixa lateral (escondido em telas >= 75%) */
+.leads-strip-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #4a4a4a;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.leads-strip-toggle svg {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.25s ease;
+}
+
+/* 4. Tela < 75% com cliente aberto: encolhe Leads para faixa de 44px com > */
+.main-layout.split-view.narrow-screen:not(.leads-expanded) .dashboard {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.main-layout.split-view.narrow-screen:not(.leads-expanded) .dashboard > :not(.leads-strip-toggle) {
+    display: none;
+}
+
+.main-layout.split-view.narrow-screen:not(.leads-expanded) .leads-strip-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+}
+
+.main-layout.split-view.narrow-screen:not(.leads-expanded) .leads-strip-toggle:hover {
+    background-color: #f4f6f8;
+    color: #0066ff;
+}
+
+.main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    width: 30px;
+    height: 30px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background-color: #f4f6f8;
+}
+
+.main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle:hover {
+    background-color: #eef5ff;
+    color: #0066ff;
+}
+
+.main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle svg {
+    transform: rotate(180deg);
+}
+
+
+
+
+.hidden {
+    display: none !important;
+}
+
+.blank-screen {
+    display: none;
+    width: 95%;
+    height: calc(100vh - 80px);
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px 40px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.blank-screen.active {
+    display: flex;
+    flex-direction: column;
 }
