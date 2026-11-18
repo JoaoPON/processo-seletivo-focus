@@ -1,5 +1,5 @@
 from unittest.mock import patch
-from fastapi import HTTPException
+from fastapi import HTTPException, BackgroundTasks
 
 from backend.main import receber_lead
 from backend.schemas import LeadWebhookSchema
@@ -18,7 +18,7 @@ lead = LeadWebhookSchema(
 
 with patch("backend.main.salvar_lead", side_effect=Exception("Falha simulada")):
     try:
-        receber_lead(lead)
+        receber_lead(lead, BackgroundTasks())
 
     except HTTPException as erro:
         print("Código HTTP:", erro.status_code)

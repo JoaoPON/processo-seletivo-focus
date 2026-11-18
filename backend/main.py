@@ -2,9 +2,10 @@
 
 import logging
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from backend.schemas import LeadWebhookSchema
 from backend.sheets import salvar_lead
+from backend.processamento_ia import processar_ia_do_lead
 
 app = FastAPI(title="PS-Focus")
 
@@ -19,7 +20,7 @@ def health():
 
 
 @app.post("/api/webhooks/leads")
-def receber_lead(lead: LeadWebhookSchema):
+def receber_lead(lead: LeadWebhookSchema, background_tasks: BackgroundTasks):
 
     dados = lead.model_dump()
 
@@ -34,6 +35,9 @@ def receber_lead(lead: LeadWebhookSchema):
         logger.exception("Erro ao salvar lead no Google Sheets")
 
         raise HTTPException(status_code=500, detail="Não foi possível salvar o lead.")
+
+
+    background_tasks.add_task(processar_ia_do_lead, lead_id)
 
 
     return {
