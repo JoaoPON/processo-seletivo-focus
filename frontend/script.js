@@ -45,17 +45,14 @@ const blankScreens = document.querySelectorAll('.blank-screen');
 
 navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-        // Destaca o botão clicado na navbar
         document.querySelector('.navbar-btn.active')?.classList.remove('active');
         btn.classList.add('active');
 
         const target = btn.dataset.tab;
 
-        // Oculta todas as telas
         leadsScreen.classList.add('hidden');
         blankScreens.forEach(screen => screen.classList.remove('active'));
 
-        // Exibe apenas a tela correspondente
         if (target === 'leads') {
             leadsScreen.classList.remove('hidden');
         } else {

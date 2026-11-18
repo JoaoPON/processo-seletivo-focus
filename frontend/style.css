@@ -1,17 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+/*variáveis de cores*/
+:root {
+    --bg-1: white;
+    --bg-2: silver;
+    --bg-3: #eba919;
+    --bg-4: rgb(195, 238, 238);
+    --bg-5: #dcfce7;
+
+    --cor-1: #0066ff;
+    --cor-2: black;
+    --cor-3: #333;
+    --cor-4: #666;
+    --cor-5: rgb(63, 97, 97);
+    --cor-6: #15803d;
+    --cor-7: silver;
+    --cor-8: rgba(0, 0, 0, 0.24);
+}
+
 /*barra de navegação do dashboard*/
+
 .navbar {
-    align-items: center;
     display: flex;
-    flex-direction: row;
+    align-items: center;
     gap: 8px;
     width: 95%;
     padding: 5px 15px;
-    background-color: #ffffff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    border-radius: 10px;
     margin: 10px;
+    background-color: var(--bg-1);
+    box-shadow: 0 2px 10px var(--cor-8);
+    border-radius: 10px;
 }
 
 .navbar-acc {
@@ -21,8 +39,8 @@
     flex-shrink: 0;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
     padding: 7px;
+    border-radius: 50%;
 }
 
 .navbar-btn {
@@ -35,7 +53,7 @@
     background-color: transparent;
     border: 1px solid transparent;
     border-radius: 8px;
-    color: #4a4a4a;
+    color: var(--cor-4);
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 0.95rem;
     font-weight: 500;
@@ -50,18 +68,19 @@
 }
 
 .navbar-btn:hover:not(.active) {
-    background-color: #e0e3e6;
-    color: #1a1a1a;
+    background-color: var(--bg-1);
+    color: var(--cor-2);
 }
 
 .navbar-btn.active {
-    background-color: #eef5ff;
-    border-color: #0066ff;
-    color: #0066ff;
+    background-color: var(--bg-1);
+    border-color: var(--cor-1);
+    color: var(--cor-1);
     font-weight: 600;
 }
 
 /*padrão*/
+
 * {
     margin: 0;
     padding: 0;
@@ -78,16 +97,20 @@ body {
     height: 100vh;
     padding: 14px 0px;
     overflow: hidden;
-    background-color: silver;
+    background-color: var(--bg-2);
+}
+
+.hidden {
+    display: none !important;
 }
 
 /*tela de login*/
 .container {
     width: 420px;
-    background-color: white;
-    border-radius: 10px;
     padding: 20px 40px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-color: var(--bg-1);
+    border-radius: 10px;
+    box-shadow: var(--cor-8) 0px 3px 8px;
 }
 
 .container h1 {
@@ -106,10 +129,33 @@ body {
 .input-box input {
     width: 100%;
     height: 100%;
-    border: 2px solid silver;
+    padding: 20px 45px 20px 20px;
+    border: 2px solid var(--cor-7);
     border-radius: 40px;
     font-size: 16px;
-    padding: 20px 45px 20px 20px;
+}
+
+.input-box input::-ms-reveal,
+.input-box input::-ms-clear {
+    display: none;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--cor-4);
+    cursor: pointer;
+    z-index: 2;
+}
+
+.toggle-password:hover {
+    color: var(--cor-2);
 }
 
 .forgot {
@@ -119,13 +165,13 @@ body {
 }
 
 .forgot label input {
-    accent-color: black;
+    accent-color: var(--cor-2);
     margin-right: 5px;
 }
 
 .forgot a {
     text-decoration: none;
-    color: black;
+    color: var(--cor-2);
 }
 
 .forgot a:hover {
@@ -135,88 +181,57 @@ body {
 .login {
     width: 100%;
     height: 50px;
-    background-color: white;
+    background-color: var(--bg-1);
     border: 0;
     border-radius: 40px;
-    cursor: pointer;
     font-size: 16px;
-    color: #333;
     font-weight: 600;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    color: var(--cor-3);
+    cursor: pointer;
+    box-shadow: var(--cor-8) 0px 3px 8px;
 }
 
 .login:hover {
-    background-color: silver;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    display: flex;
-    align-items: center;
-    color: #666;
-    cursor: pointer;
-    z-index: 2;
-}
-
-.toggle-password:hover {
-    color: black;
-}
-
-.input-box input::-ms-reveal,
-.input-box input::-ms-clear {
-    display: none;
+    background-color: var(--bg-2);
 }
 
 /*dashboard*/
+
 .main-layout {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 0px;
     width: 95%;
     height: calc(100vh - 80px);
+    transition: gap 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .dashboard {
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
     width: auto;
     min-width: 0;
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-    border-radius: 10px;
     padding: 30px 40px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    transition: all 0.3s ease;
+    overflow: hidden;
+    background-color: var(--bg-1);
+    border-radius: 10px;
+    box-shadow: var(--cor-8) 0px 3px 8px;
+    transition: flex 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                min-width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                padding 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.leads-details {
-    height: 100%;
-    overflow-y: auto;
-    display: none;
-    flex: 2;
-    min-width: 0;
-    background-color: white;
-    border-radius: 10px;
-    padding: 30px 40px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+.dashboard h1 {
+    font-size: 20px;
+    text-align: left;
 }
 
 .leads-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.dashboard h1 {
-    font-size: 20px;
-    text-align: left;
-
 }
 
 .leads-buttons {
@@ -226,25 +241,25 @@ body {
 }
 
 .list {
+    padding: 8px 14px;
     border-radius: 5px;
     font-size: 13px;
-    padding: 8px 14px;
 }
 
 .new {
-    background-color: #eba919;
+    padding: 8px 14px;
+    background-color: var(--bg-3);
     border-radius: 5px;
     font-size: 13px;
-    padding: 8px 14px;
 }
 
 .search input {
     width: 100%;
     margin: 12px 0;
-    border-radius: 10px;
-    border: 2px solid silver;
-    font-size: 13px;
     padding: 8px 14px;
+    border: 2px solid var(--cor-7);
+    border-radius: 10px;
+    font-size: 13px;
 }
 
 .select {
@@ -256,12 +271,13 @@ body {
 .select select {
     width: 100%;
     padding: 8px 14px;
-    border: 2px solid silver;
+    border: 2px solid var(--cor-7);
     border-radius: 10px;
     font-size: 13px;
     outline: none;
 }
 
+/*lista de clientes*/
 .client-list {
     display: flex;
     flex-direction: column;
@@ -275,18 +291,22 @@ body {
     align-items: center;
     gap: 12px;
     width: 100%;
-    height: auto;
     flex-shrink: 0;
     padding: 12px;
     background: transparent;
     border: none;
-    border-bottom: 1px solid silver;
+    border-bottom: 1px solid var(--cor-7);
     border-radius: 0;
     cursor: pointer;
 }
 
 .client-item:hover {
-    background-color: #f3f4f6;
+    background-color: var(--bg-1);
+}
+
+.client-item.selected {
+    background-color: var(--bg-1);
+    border-left: 4px solid var(--cor-1);
 }
 
 .client-avatar {
@@ -295,33 +315,33 @@ body {
     justify-content: center;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
-    background-color: rgb(195, 238, 238);
-    color: rgb(63, 97, 97);
-    font-weight: 600;
-    font-size: 13px;
     flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--bg-4);
+    color: var(--cor-5);
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .client-info {
-    min-width: 0;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     flex: 1;
+    min-width: 0;
     gap: 2px;
+    overflow: hidden;
 }
 
 .client-name {
     font-size: 16px;
     font-weight: 600;
-    color: black;
+    color: var(--cor-2);
 }
 
 .client-sub {
     font-size: 11px;
-    color: rgb(100, 100, 100);
+    color: var(--cor-4);
 }
 
 .client-name, .client-sub {
@@ -334,14 +354,77 @@ body {
 }
 
 .client-status {
-    background-color: #dcfce7;
-    color: #15803d;
+    flex-shrink: 0;
     padding: 4px 10px;
+    background-color: var(--bg-5);
+    color: var(--cor-6);
     border-radius: 20px;
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
-    flex-shrink: 0;
+}
+
+/*calendário e gerência*/
+.blank-screen {
+    display: none;
+    width: 95%;
+    height: calc(100vh - 80px);
+    padding: 30px 40px;
+    background-color: var(--bg-1);
+    border-radius: 10px;
+    box-shadow: var(--cor-8) 0px 3px 8px;
+}
+
+.blank-screen.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/*informações do cliente*/
+
+.leads-details {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 0 0 0px;
+    width: 0px;
+    min-width: 0px;
+    height: 100%;
+    padding: 0px;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: var(--bg-1);
+    border-radius: 10px;
+    box-shadow: none;
+    transition: flex 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                padding 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                opacity 0.25s ease;
+}
+
+.leads-details > * {
+    opacity: 0;
+    transition: opacity 0.12s ease;
+}
+
+/*transições e responsividade (<75%)*/
+
+@keyframes fadeInLeads {
+    0%, 35% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.dashboard > :not(.leads-strip-toggle) {
+    animation: fadeInLeads 0.38s ease;
+}
+
+/*tela dividida (1/3 leads e 2/3 inf. do cliente)*/
+.main-layout.split-view {
+    gap: 20px;
 }
 
 .main-layout.split-view .dashboard {
@@ -350,22 +433,26 @@ body {
 }
 
 .main-layout.split-view .leads-details {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    flex: 2 1 0%;
+    width: auto;
+    padding: 30px 40px;
+    opacity: 1;
+    overflow-y: auto;
+    pointer-events: auto;
+    box-shadow: var(--cor-8) 0px 3px 8px;
 }
 
-.client-item.selected {
-    background-color: #eef5ff;
-    border-left: 4px solid #0066ff;
+.main-layout.split-view .leads-details > * {
+    opacity: 1;
+    transition: opacity 0.25s ease 0.12s;
 }
 
-/* 3. Botão > da faixa lateral (escondido em telas >= 75%) */
+/*botão > da faixa lateral recolhida*/
 .leads-strip-toggle {
     display: none;
     background: transparent;
     border: none;
-    color: #4a4a4a;
+    color: var(--cor-4);
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
@@ -373,16 +460,26 @@ body {
 .leads-strip-toggle svg {
     width: 20px;
     height: 20px;
-    transition: transform 0.25s ease;
+    transition: transform 0.3s ease;
 }
 
-/* 4. Tela < 75% com cliente aberto: encolhe Leads para faixa de 44px com > */
+.main-layout.split-view.narrow-screen .leads-strip-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-layout.split-view.narrow-screen .leads-strip-toggle:hover {
+    background-color: var(--bg-1);
+    color: var(--cor-1);
+}
+
+/*faixa recolhida quando a janela <75%*/
 .main-layout.split-view.narrow-screen:not(.leads-expanded) .dashboard {
     flex: 0 0 44px;
     width: 44px;
     min-width: 44px;
-    padding: 0;
-    overflow: hidden;
+    padding: 0px;
 }
 
 .main-layout.split-view.narrow-screen:not(.leads-expanded) .dashboard > :not(.leads-strip-toggle) {
@@ -390,58 +487,21 @@ body {
 }
 
 .main-layout.split-view.narrow-screen:not(.leads-expanded) .leads-strip-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 100%;
     height: 100%;
     border-radius: 10px;
 }
 
-.main-layout.split-view.narrow-screen:not(.leads-expanded) .leads-strip-toggle:hover {
-    background-color: #f4f6f8;
-    color: #0066ff;
-}
-
+/*faixa expandida em janela <75% (gira seta)*/
 .main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     align-self: flex-end;
     width: 30px;
     height: 30px;
     margin-bottom: 8px;
     border-radius: 6px;
-    background-color: #f4f6f8;
-}
-
-.main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle:hover {
-    background-color: #eef5ff;
-    color: #0066ff;
+    background-color: var(--bg-1);
 }
 
 .main-layout.split-view.narrow-screen.leads-expanded .leads-strip-toggle svg {
     transform: rotate(180deg);
-}
-
-
-
-
-.hidden {
-    display: none !important;
-}
-
-.blank-screen {
-    display: none;
-    width: 95%;
-    height: calc(100vh - 80px);
-    background-color: white;
-    border-radius: 10px;
-    padding: 30px 40px;
-    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-}
-
-.blank-screen.active {
-    display: flex;
-    flex-direction: column;
 }
