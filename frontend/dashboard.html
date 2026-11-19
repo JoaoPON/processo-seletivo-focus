@@ -9,42 +9,42 @@
 </head>
 
 <body>
-    <div class="side-tabs">
-        <button class="side-tab active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            <span>Leads</span>
-        </button>
 
-        <button class="side-tab">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <span>Calendário</span>
-        </button>
-    
-        <button class="side-tab">
+    <!--barra de navegação-->
+    <nav class="navbar">
+        <div class="nav-pill" id="nav-pill"></div>
+
+        <button class="navbar-acc">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
             </svg>
+        </button>
+
+        <button class="navbar-btn active" data-tab="leads">
+            <span>Leads</span>
+        </button>
+
+        <button class="navbar-btn" data-tab="calendar">
+            <span>Calendário</span>
+        </button>
+
+        <button class="navbar-btn" data-tab="adm">
             <span>Gerência</span>
         </button>
-    </div>
-
+    </nav>
 
     <div class="main-layout" id="main-layout">
-        <div class="dashboard"> <!--quadro de leads (full/esquerda)-->
+        <!--quadro de leads (full/esquerda)-->
+        <div class="dashboard">
+            <button class="leads-strip-toggle" id="leads-strip-toggle" title="Mostrar Leads">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+
             <div class="leads-header">
                 <h1>Leads</h1>
                 <div class="leads-buttons">
@@ -57,57 +57,147 @@
                 <input placeholder="Buscar por nome ou telefone..." type="text">
             </div>
 
+            <!--segmentos e status-->
             <div class="select">
                 <select name="segments" id="segments">
                     <option value="0">Todos Segmentos</option>
-                    <option value="1">Restaurante</option>
-                    <option value="2">Clínica</option>
-                    <option value="3">Criar novo segmento</option>
+                    <option value="1">Escola</option>
+                    <option value="2">Faculdade</option>
+                    <option value="novo">Criar novo segmento</option>
                 </select>
 
                 <select name="status" id="status">
                     <option value="0">Todos status</option>
                     <option value="1">Reunião marcada</option>
-                    <option value="2">Descartado</option>
-                    <option value="3">Criar um novo status</option>
+                    <option value="1">Reunião cancelada</option>
+                    <option value="novo">Criar um novo status</option>
                 </select>
             </div>
 
+            <!--lista de clientes-->
             <div class="client-list" id="client-list">
-                <button class="client-item">
+                <button class="client-item" data-endereco="Rua das Flores, 123 - Centro" data-funcionamento="08:00 às 18:00">
                     <span class="client-avatar">C1</span>
                     <span class="client-info">
                         <span class="client-name">Cliente 1</span>
                         <span class="client-sub">
-                            <span class="client-segment">Restaurante</span>
+                            <span class="client-segment">Escola</span>
                             ·
-                            <span class="client-number">1234-5678</span>
+                            <span class="client-number">(22)12345-6789</span>
                         </span>
                     </span>
                     <span class="client-status">Reunião marcada</span>
                 </button>
 
-                <button class="client-item">
+                <button class="client-item" data-endereco="Av. Principal, 450 - Sala 2" data-funcionamento="07:00 às 22:00">
                     <span class="client-avatar">C2</span>
                     <span class="client-info">
                         <span class="client-name">Cliente 2</span>
                         <span class="client-sub">
-                            <span class="client-segment">Clínica</span>
+                            <span class="client-segment">Faculdade</span>
                             ·
-                            <span class="client-number">8765-4321</span>
+                            <span class="client-number">(22)98765-4321</span>
                         </span>
                     </span>
                     <span class="client-status">Reunião marcada</span>
                 </button>
+            </div>
+        </div>
 
-                <div class="leads-details" id="leads-details"> <!--quadro de detalhes (oculto/direita)-->
-                    <h1>dados muitos dados</h1>
-                    <!--dados de cada cliente-->
+        <div class="leads-details" id="leads-details">
+            <div class="leads-header">
+                <h1 id="detail-name">Dados do Cliente</h1>
+                <button class="new" id="log-call-btn">Registrar Ligação</button>
+            </div>
+
+            <!--informações do cliente-->
+            <div class="details-body">
+                <div>
+                    <span class="client-status" id="detail-status">Reunião marcada</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="details-row">
+                    <div class="info-block">
+                        <span class="info-label">Telefone</span>
+                        <span class="info-value" id="detail-phone"> </span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Segmento</span>
+                        <span class="info-value" id="detail-segment"> </span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Endereço</span>
+                        <span class="info-value" id="detail-address"> </span>
+                    </div>
+                </div>
+
+                <div class="info-block">
+                    <span class="info-label">Funcionamento</span>
+                    <span class="info-value" id="detail-hours"> </span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="history-section">
+                    <h2>Histórico de ligações (0)</h2>
+                    <div class="history-box">
+                        <!--adc o histórico de ligações aqui-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--representação da página do calendário e da gerência-->
+    <div class="blank-screen" id="screen-calendar"></div>
+    <div class="blank-screen" id="screen-adm"></div>
+
+    <!--registrar ligação-->
+    <div class="modal-overlay" id="call-modal">
+        <div class="modal-content">
+            <h2>Registrar Ligação</h2>
+            <p>Preencha os dados da ligação aqui...</p>
+
+            <!--adc dados do popup de registrar ligação-->
+
+            <div class="modal-buttons">
+                <button class="list" id="close-modal-btn">Cancelar</button>
+                <button class="new">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!--TESTE popup para Novo Segmento / Status -->
+    <div class="modal-overlay" id="category-modal">
+        <div class="modal-content small-modal">
+            <h2 id="category-modal-title">Novo Item</h2>
+            
+            <div class="modal-form">
+                <div class="form-group">
+                    <label for="category-name-input">Nome</label>
+                    <input type="text" id="category-name-input" placeholder="Ex: Em negociação, Clínica...">
+                </div>
+
+                <div class="form-group">
+                    <label for="category-color-input">Cor da etiqueta</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="category-color-input" value="#dcfce7">
+                        <span id="color-hex-label">#dcfce7</span>
+                    </div>
                 </div>
             </div>
 
+            <div class="modal-buttons">
+                <button class="list" id="close-category-btn">Cancelar</button>
+                <button class="new" id="save-category-btn">Salvar</button>
+            </div>
         </div>
     </div>
+
+    <script src="script.js"></script>
+
 </body>
 
 </html>
