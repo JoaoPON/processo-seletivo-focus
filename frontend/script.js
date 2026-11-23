@@ -14,6 +14,7 @@ const blankScreens = document.querySelectorAll('.blank-screen');
 const navPill = document.getElementById('nav-pill');
 
 let todosLeads = [];
+let todasInteracoes = [];
 let todasListas = {
     nichos: [],
     cidades: [],
@@ -29,6 +30,7 @@ let interacoesDoLeadAtual = [];
 let leadSelecionadoId = null;
 let leadEditandoId = null;
 let interacaoEditandoId = null;
+let interacaoLeadAlvoId = null;
 let modoModalInteracao = 'registrar'; // 'agendar' | 'registrar' | 'concluir' | 'editar-realizada'
 
 // ==================== LAYOUT E RESPONSIVIDADE ====================
@@ -60,8 +62,6 @@ stripToggle.addEventListener('click', () => {
 
 
 
-
-
 function gerarIniciais(texto) {
     if (!texto) return "LD";
     return texto.trim().slice(0, 2).toUpperCase();
@@ -75,6 +75,18 @@ function obterDataHojeISO() {
     return `${ano}-${mes}-${dia}`;
 }
 
+function normalizarDataISO(dataStr) {
+    if (!dataStr) return "";
+    const limpo = dataStr.trim();
+    if (limpo.includes("/")) {
+        const partes = limpo.split("/");
+        if (partes.length === 3) {
+            return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+        }
+    }
+    return limpo;
+}
+
 function formatarDataBR(dataISO) {
     if (!dataISO) return "";
     if (dataISO.includes("/")) return dataISO;
@@ -83,7 +95,7 @@ function formatarDataBR(dataISO) {
     return dataISO;
 }
 
-function preencherSelect(selectEl, opcoes, textoPadrao = null, manterOpcaoNovo = false) {
+function preencherSelect(selectEl, opcoes, textoPadrao = null) {
     if (!selectEl) return;
     const valorAtual = selectEl.value;
     selectEl.innerHTML = "";
@@ -102,13 +114,6 @@ function preencherSelect(selectEl, opcoes, textoPadrao = null, manterOpcaoNovo =
         selectEl.appendChild(opt);
     });
 
-    if (manterOpcaoNovo) {
-        const optNovo = document.createElement("option");
-        optNovo.value = "novo";
-        optNovo.textContent = "+ Criar novo...";
-        selectEl.appendChild(optNovo);
-    }
-
     if (valorAtual && [...selectEl.options].some(o => o.value === valorAtual)) {
         selectEl.value = valorAtual;
     }
@@ -122,8 +127,8 @@ async function carregarListas() {
         if (!resp.ok) throw new Error('Falha ao buscar listas');
         todasListas = await resp.json();
 
-        preencherSelect(filterSegment, todasListas.nichos || [], "Todos Nichos", true);
-        preencherSelect(filterStatus, todasListas.status || [], "Todos Status", true);
+        preencherSelect(filterSegment, todasListas.nichos || [], "Todos Nichos");
+        preencherSelect(filterStatus, todasListas.status || [], "Todos Status");
 
         const statusOpcoes = (todasListas.status && todasListas.status.length)
             ? todasListas.status
@@ -137,6 +142,10 @@ async function carregarListas() {
         preencherSelect(document.getElementById('interacao-responsavel'), todasListas.membros || [], "Selecione o responsável...");
         preencherSelect(document.getElementById('interacao-resultado'), todasListas.resultado || [], "Sem resultado específico");
         preencherSelect(document.getElementById('lead-sdr'), todasListas.membros || [], "Não atribuído");
+
+        // Filtros da aba de Agendamentos
+        preencherSelect(document.getElementById('cal-filter-resp'), todasListas.membros || [], "Todos Responsáveis");
+        preencherSelect(document.getElementById('cal-filter-acao'), acoesOpcoes, "Todas Ações");
 
         const dlNichos = document.getElementById('lista-nichos-options');
         if (dlNichos) {
@@ -155,8 +164,8 @@ async function carregarListas() {
 
 function aplicarFiltrosLeads() {
     const termo = (searchInput?.value || "").toLowerCase().trim();
-    const nichoFiltro = filterSegment?.value && filterSegment.value !== "novo" ? filterSegment.value : "";
-    const statusFiltro = filterStatus?.value && filterStatus.value !== "novo" ? filterStatus.value : "";
+    const nichoFiltro = filterSegment?.value || "";
+    const statusFiltro = filterStatus?.value || "";
 
     const filtrados = todosLeads.filter(l => {
         const bateTexto =
@@ -234,36 +243,38 @@ function preencherDetalhesLead(lead) {
     carregarInteracoesDoLead(lead.id);
 }
 
-async function salvarStatusLead(novoStatus) {
-    if (!leadSelecionadoId) return;
-    const resp = await fetch(`${API_BASE}/api/leads/${leadSelecionadoId}`, {
+async function salvarStatusLead(leadIdAlvo, novoStatus) {
+    if (!leadIdAlvo) return;
+    const resp = await fetch(`${API_BASE}/api/leads/${leadIdAlvo}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: novoStatus })
     });
     if (!resp.ok) throw new Error('Falha ao atualizar status');
 
-    const idx = todosLeads.findIndex(l => l.id === leadSelecionadoId);
+    const idx = todosLeads.findIndex(l => l.id === leadIdAlvo);
     if (idx !== -1) {
         todosLeads[idx].status = novoStatus;
         aplicarFiltrosLeads();
     }
 
-    const statusSelect = document.getElementById('detail-status-select');
-    if (statusSelect) {
-        if (![...statusSelect.options].some(o => o.value === novoStatus)) {
-            const opt = document.createElement('option');
-            opt.value = novoStatus;
-            opt.textContent = novoStatus;
-            statusSelect.appendChild(opt);
+    if (leadIdAlvo === leadSelecionadoId) {
+        const statusSelect = document.getElementById('detail-status-select');
+        if (statusSelect) {
+            if (![...statusSelect.options].some(o => o.value === novoStatus)) {
+                const opt = document.createElement('option');
+                opt.value = novoStatus;
+                opt.textContent = novoStatus;
+                statusSelect.appendChild(opt);
+            }
+            statusSelect.value = novoStatus;
         }
-        statusSelect.value = novoStatus;
     }
 }
 
 document.getElementById('detail-status-select')?.addEventListener('change', async (e) => {
     try {
-        await salvarStatusLead(e.target.value);
+        await salvarStatusLead(leadSelecionadoId, e.target.value);
     } catch (erro) {
         alert('Não foi possível atualizar o status na planilha.');
         console.error(erro);
@@ -299,20 +310,8 @@ clientListContainer.addEventListener('click', (e) => {
 });
 
 searchInput?.addEventListener('input', aplicarFiltrosLeads);
-filterSegment?.addEventListener('change', () => {
-    if (filterSegment.value === 'novo') {
-        openCategoryModal(filterSegment, 'Criar Novo Nicho');
-    } else {
-        aplicarFiltrosLeads();
-    }
-});
-filterStatus?.addEventListener('change', () => {
-    if (filterStatus.value === 'novo') {
-        openCategoryModal(filterStatus, 'Criar Novo Status');
-    } else {
-        aplicarFiltrosLeads();
-    }
-});
+filterSegment?.addEventListener('change', aplicarFiltrosLeads);
+filterStatus?.addEventListener('change', aplicarFiltrosLeads);
 
 document.getElementById('refresh-leads-btn1')?.addEventListener('click', carregarLeads);
 document.getElementById('refresh-leads-btn2')?.addEventListener('click', carregarLeads);
@@ -424,7 +423,7 @@ newLeadForm?.addEventListener('submit', async (e) => {
     }
 });
 
-// Interacoes do Lead
+// Interações do Lead
 
 async function carregarInteracoesDoLead(leadId) {
     const box = document.getElementById('lead-history-list');
@@ -446,7 +445,7 @@ function classificarInteracao(item, hojeISO) {
     const realizada = Boolean((item.data_realizada || '').trim());
     if (realizada) return { tipo: 'realizada', ordem: 2 };
 
-    const dataAg = (item.data_agendada || '').trim();
+    const dataAg = normalizarDataISO(item.data_agendada);
     if (dataAg && dataAg < hojeISO) return { tipo: 'atrasada', ordem: 0 };
 
     return { tipo: 'agendada', ordem: 1 };
@@ -471,12 +470,12 @@ function renderizarHistoricoLead(lista) {
         }
 
         if (infoA.ordem < 2) {
-            const chaveA = `${a.data_agendada || '9999-99-99'} ${a.hora_agendada || '99:99'}`;
-            const chaveB = `${b.data_agendada || '9999-99-99'} ${b.hora_agendada || '99:99'}`;
+            const chaveA = `${normalizarDataISO(a.data_agendada) || '9999-99-99'} ${a.hora_agendada || '99:99'}`;
+            const chaveB = `${normalizarDataISO(b.data_agendada) || '9999-99-99'} ${b.hora_agendada || '99:99'}`;
             return chaveA.localeCompare(chaveB);
         } else {
-            const chaveA = `${a.data_realizada || ''} ${a.hora_realizada || ''}`;
-            const chaveB = `${b.data_realizada || ''} ${b.hora_realizada || ''}`;
+            const chaveA = `${normalizarDataISO(a.data_realizada) || ''} ${a.hora_realizada || ''}`;
+            const chaveB = `${normalizarDataISO(b.data_realizada) || ''} ${b.hora_realizada || ''}`;
             return chaveB.localeCompare(chaveA);
         }
     });
@@ -555,21 +554,21 @@ function configurarCamposModalInteracao(modo) {
 }
 
 window.abrirModalInteracao = function(modo, interacaoId = null) {
-    if (!leadSelecionadoId) {
-        alert('Selecione um lead primeiro.');
-        return;
-    }
-
     interacaoEditandoId = interacaoId;
     interactionForm.reset();
 
     const agora = new Date();
     const hojeISO = obterDataHojeISO();
     const horaAtual = agora.toTimeString().slice(0, 5);
-    const leadAtual = todosLeads.find(l => l.id === leadSelecionadoId);
 
     if (!interacaoId) {
-        // Criação: 'agendar' ou 'registrar'
+        if (!leadSelecionadoId) {
+            alert('Selecione um lead primeiro.');
+            return;
+        }
+        interacaoLeadAlvoId = leadSelecionadoId;
+        const leadAtual = todosLeads.find(l => l.id === leadSelecionadoId);
+
         configurarCamposModalInteracao(modo);
         document.getElementById('interaction-modal-title').textContent =
             modo === 'agendar' ? 'Agendar Interação' : 'Registrar Interação';
@@ -582,9 +581,12 @@ window.abrirModalInteracao = function(modo, interacaoId = null) {
             document.getElementById('interacao-hora-realizada').value = horaAtual;
         }
     } else {
-        // Edição ou Conclusão de registro existente
-        const item = interacoesDoLeadAtual.find(i => i.id === interacaoId);
+
+        const item = interacoesDoLeadAtual.find(i => i.id === interacaoId)
+            || todasInteracoes.find(i => i.id === interacaoId);
         if (!item) return;
+
+        interacaoLeadAlvoId = item.id_lead || leadSelecionadoId;
 
         document.getElementById('interacao-acao').value = item.acao || '';
         document.getElementById('interacao-responsavel').value = item.responsavel || '';
@@ -598,14 +600,13 @@ window.abrirModalInteracao = function(modo, interacaoId = null) {
             document.getElementById('interaction-modal-title').textContent =
                 modo === 'concluir' ? 'Concluir Agendamento' : 'Editar Interação';
 
-            document.getElementById('interacao-data-realizada').value = item.data_realizada || hojeISO;
+            document.getElementById('interacao-data-realizada').value = normalizarDataISO(item.data_realizada) || hojeISO;
             document.getElementById('interacao-hora-realizada').value = item.hora_realizada || horaAtual;
             document.getElementById('interacao-resultado').value = item.resultado || '';
         } else {
-            // Editando um item que ainda está agendado
             configurarCamposModalInteracao('agendar');
             document.getElementById('interaction-modal-title').textContent = 'Editar Agendamento';
-            document.getElementById('interacao-data-agendada').value = item.data_agendada || '';
+            document.getElementById('interacao-data-agendada').value = normalizarDataISO(item.data_agendada) || '';
             document.getElementById('interacao-hora-agendada').value = item.hora_agendada || '';
         }
     }
@@ -654,22 +655,28 @@ interactionForm?.addEventListener('submit', async (e) => {
             resp = await fetch(`${API_BASE}/api/interacoes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_lead: leadSelecionadoId, ...dados })
+                body: JSON.stringify({ id_lead: interacaoLeadAlvoId, ...dados })
             });
         }
 
         if (!resp.ok) throw new Error('Erro ao salvar interação');
 
-        // Automatização do status
-        if (dados.data_realizada) {
-            const leadAtual = todosLeads.find(l => l.id === leadSelecionadoId);
+        // Automatização do status do lead
+        if (dados.data_realizada && interacaoLeadAlvoId) {
+            const leadAtual = todosLeads.find(l => l.id === interacaoLeadAlvoId);
             if (leadAtual && (!leadAtual.status || leadAtual.status === 'Novo')) {
-                await salvarStatusLead('Em contato');
+                await salvarStatusLead(interacaoLeadAlvoId, 'Em contato');
             }
         }
 
         callModal.classList.remove('active');
-        await carregarInteracoesDoLead(leadSelecionadoId);
+
+        if (leadSelecionadoId) {
+            await carregarInteracoesDoLead(leadSelecionadoId);
+        }
+        if (document.getElementById('screen-calendar')?.classList.contains('active')) {
+            await carregarAgendamentos();
+        }
     } catch (erro) {
         alert('Não foi possível salvar a interação.');
         console.error(erro);
@@ -678,6 +685,208 @@ interactionForm?.addEventListener('submit', async (e) => {
         btn.textContent = 'Salvar';
     }
 });
+
+// Aba Agendamentos
+
+async function carregarAgendamentos() {
+    const container = document.getElementById('calendar-sections');
+    if (container) {
+        container.innerHTML = '<p style="color: var(--txt-3); font-size: 13px;">Atualizando agenda...</p>';
+    }
+
+    try {
+        if (!todosLeads.length) {
+            await carregarLeads();
+        }
+        const resp = await fetch(`${API_BASE}/api/interacoes`);
+        if (!resp.ok) throw new Error('Falha ao buscar interações');
+        todasInteracoes = await resp.json();
+        renderizarAgendamentos();
+    } catch (erro) {
+        console.error(erro);
+        if (container) {
+            container.innerHTML = '<p style="color: #dc2626; font-size: 13px;">Erro ao carregar agendamentos.</p>';
+        }
+    }
+}
+
+function renderizarAgendamentos() {
+    const container = document.getElementById('calendar-sections');
+    if (!container) return;
+
+    const hojeISO = obterDataHojeISO();
+    const leadsMap = Object.fromEntries(todosLeads.map(l => [l.id, l]));
+
+    // Considera apenas interações que possuem data_agendada preenchida
+    const agendados = todasInteracoes
+        .filter(item => Boolean((item.data_agendada || '').trim()))
+        .map(item => {
+            const lead = leadsMap[item.id_lead] || {};
+            const dataAgISO = normalizarDataISO(item.data_agendada);
+            const realizada = Boolean((item.data_realizada || '').trim());
+
+            let situacao = 'proximo';
+            if (realizada) {
+                situacao = 'realizado';
+            } else if (dataAgISO < hojeISO) {
+                situacao = 'atrasado';
+            } else if (dataAgISO === hojeISO) {
+                situacao = 'hoje';
+            }
+
+            return {
+                ...item,
+                dataAgISO,
+                situacao,
+                empresa: lead.empresa || 'Lead não encontrado',
+                contato: lead.nome_completo || '',
+                whatsapp: lead.whatsapp || '',
+            };
+        });
+
+    document.getElementById('kpi-atrasados').textContent = agendados.filter(a => a.situacao === 'atrasado').length;
+    document.getElementById('kpi-hoje').textContent = agendados.filter(a => a.situacao === 'hoje').length;
+    document.getElementById('kpi-proximos').textContent = agendados.filter(a => a.situacao === 'proximo').length;
+
+    const termo = (document.getElementById('cal-search')?.value || '').toLowerCase().trim();
+    const respFiltro = document.getElementById('cal-filter-resp')?.value || '';
+    const acaoFiltro = document.getElementById('cal-filter-acao')?.value || '';
+    const situacaoFiltro = document.getElementById('cal-filter-situacao')?.value ?? 'pendentes';
+
+    const filtrados = agendados.filter(a => {
+        const bateTexto =
+            a.empresa.toLowerCase().includes(termo) ||
+            a.contato.toLowerCase().includes(termo) ||
+            (a.pauta || '').toLowerCase().includes(termo);
+
+        const bateResp = !respFiltro || (a.responsavel || '') === respFiltro;
+        const bateAcao = !acaoFiltro || (a.acao || '') === acaoFiltro;
+
+        let bateSituacao = true;
+        if (situacaoFiltro === 'pendentes') {
+            bateSituacao = a.situacao !== 'realizado';
+        } else if (situacaoFiltro) {
+            bateSituacao = a.situacao === situacaoFiltro;
+        }
+
+        return bateTexto && bateResp && bateAcao && bateSituacao;
+    });
+
+    if (!filtrados.length) {
+        container.innerHTML = '<p style="color: var(--txt-3); font-size: 13px;">Nenhum agendamento encontrado para os filtros selecionados.</p>';
+        return;
+    }
+
+    const grupos = [
+        { chave: 'atrasado', titulo: 'Atrasados', ordemAsc: true },
+        { chave: 'hoje', titulo: 'Para Hoje', ordemAsc: true },
+        { chave: 'proximo', titulo: 'Próximos Compromissos', ordemAsc: true },
+        { chave: 'realizado', titulo: 'Realizados', ordemAsc: false },
+    ];
+
+    container.innerHTML = grupos.map(grupo => {
+        const itensGrupo = filtrados
+            .filter(a => a.situacao === grupo.chave)
+            .sort((a, b) => {
+                const chaveA = `${a.dataAgISO} ${a.hora_agendada || '99:99'}`;
+                const chaveB = `${b.dataAgISO} ${b.hora_agendada || '99:99'}`;
+                return grupo.ordemAsc ? chaveA.localeCompare(chaveB) : chaveB.localeCompare(chaveA);
+            });
+
+        if (!itensGrupo.length) return '';
+
+        const cardsHTML = itensGrupo.map(item => {
+            let badge = '';
+            if (item.situacao === 'atrasado') {
+                badge = `<span class="badge-overdue">Atrasado</span>`;
+            } else if (item.situacao === 'hoje') {
+                badge = `<span class="badge-pending">Hoje</span>`;
+            } else if (item.situacao === 'proximo') {
+                badge = `<span class="badge-pending" style="background-color: #e0e7ff; color: #3730a3;">Agendado</span>`;
+            } else {
+                badge = `<span class="badge-done">Realizado${item.resultado ? ` · ${item.resultado}` : ''}</span>`;
+            }
+
+            const botoes = item.situacao === 'realizado'
+                ? `
+                    <button class="list" style="padding: 6px 12px; font-size: 12px;" onclick="irParaLead('${item.id_lead}')">Ver Lead</button>
+                    <button class="list" style="padding: 6px 12px; font-size: 12px;" onclick="abrirModalInteracao('editar', '${item.id}')">Editar</button>
+                  `
+                : `
+                    <button class="list" style="padding: 6px 12px; font-size: 12px;" onclick="irParaLead('${item.id_lead}')">Ver Lead</button>
+                    <button class="list" style="padding: 6px 12px; font-size: 12px;" onclick="abrirModalInteracao('editar', '${item.id}')">Editar</button>
+                    <button class="new" style="padding: 6px 12px; font-size: 12px;" onclick="abrirModalInteracao('concluir', '${item.id}')">Concluir</button>
+                  `;
+
+            return `
+                <div class="schedule-card">
+                    <div class="schedule-datetime">
+                        <span class="schedule-date">${formatarDataBR(item.data_agendada)}</span>
+                        <span class="schedule-time">${item.hora_agendada || 'Sem hora'}</span>
+                    </div>
+                    <div class="schedule-info">
+                        <div class="schedule-company">
+                            <span>${item.empresa}</span>
+                            ${badge}
+                        </div>
+                        <div class="schedule-task">
+                            <strong>${item.acao || 'Compromisso'}</strong>${item.pauta ? ` — ${item.pauta}` : ''}
+                        </div>
+                        <div class="schedule-meta">
+                            ${[
+                                item.contato ? `Contato: ${item.contato}` : '',
+                                item.whatsapp ? `WhatsApp: ${item.whatsapp}` : '',
+                                item.responsavel ? `Resp.: ${item.responsavel}` : ''
+                            ].filter(Boolean).join(' · ')}
+                        </div>
+                    </div>
+                    <div class="schedule-actions">
+                        ${botoes}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="schedule-group">
+                <div class="schedule-group-header">
+                    <span>${grupo.titulo}</span>
+                    <span class="schedule-count">${itensGrupo.length}</span>
+                </div>
+                ${cardsHTML}
+            </div>
+        `;
+    }).join('');
+}
+
+window.irParaLead = function(leadId) {
+    const lead = todosLeads.find(l => l.id === leadId);
+    if (!lead) {
+        alert('Lead não encontrado na lista.');
+        return;
+    }
+
+    // Ativa a aba Leads na navbar
+    const btnLeads = document.querySelector('.navbar-btn[data-tab="leads"]');
+    if (btnLeads) {
+        document.querySelector('.navbar-btn.active')?.classList.remove('active');
+        btnLeads.classList.add('active');
+        moveNavPill(btnLeads);
+    }
+
+    blankScreens.forEach(screen => screen.classList.remove('active'));
+    mainLayout.classList.remove('hidden');
+
+    leadSelecionadoId = lead.id;
+    aplicarFiltrosLeads();
+    preencherDetalhesLead(lead);
+};
+
+document.getElementById('refresh-calendar-btn')?.addEventListener('click', carregarAgendamentos);
+document.getElementById('cal-search')?.addEventListener('input', renderizarAgendamentos);
+document.getElementById('cal-filter-resp')?.addEventListener('change', renderizarAgendamentos);
+document.getElementById('cal-filter-acao')?.addEventListener('change', renderizarAgendamentos);
+document.getElementById('cal-filter-situacao')?.addEventListener('change', renderizarAgendamentos);
 
 // Barra de Navegação
 
@@ -700,71 +909,13 @@ navButtons.forEach(btn => {
 
         if (target === 'leads') {
             mainLayout.classList.remove('hidden');
+        } else if (target === 'calendar') {
+            document.getElementById('screen-calendar')?.classList.add('active');
+            carregarAgendamentos();
         } else {
             document.getElementById(`screen-${target}`)?.classList.add('active');
         }
     });
-});
-
-// Popup de novo nicho e status
-const categoryModal = document.getElementById('category-modal');
-const categoryModalTitle = document.getElementById('category-modal-title');
-const categoryNameInput = document.getElementById('category-name-input');
-const categoryColorInput = document.getElementById('category-color-input');
-const colorHexLabel = document.getElementById('color-hex-label');
-const closeCategoryBtn = document.getElementById('close-category-btn');
-const saveCategoryBtn = document.getElementById('save-category-btn');
-
-let activeSelect = null;
-
-function openCategoryModal(selectElement, title) {
-    activeSelect = selectElement;
-    categoryModalTitle.textContent = title;
-    categoryNameInput.value = '';
-    categoryColorInput.value = '#dcfce7';
-    colorHexLabel.textContent = '#dcfce7';
-
-    categoryModal.classList.add('active');
-    setTimeout(() => categoryNameInput.focus(), 100);
-}
-
-function closeCategoryModal() {
-    categoryModal.classList.remove('active');
-    if (activeSelect && activeSelect.value === 'novo') {
-        activeSelect.value = '';
-    }
-    activeSelect = null;
-}
-
-categoryColorInput?.addEventListener('input', (e) => {
-    colorHexLabel.textContent = e.target.value;
-});
-
-closeCategoryBtn?.addEventListener('click', closeCategoryModal);
-categoryModal?.addEventListener('click', (e) => {
-    if (e.target === categoryModal) closeCategoryModal();
-});
-
-saveCategoryBtn?.addEventListener('click', () => {
-    const name = categoryNameInput.value.trim();
-    if (!name) {
-        categoryNameInput.focus();
-        return;
-    }
-
-    if (activeSelect) {
-        const newOption = document.createElement('option');
-        newOption.value = name;
-        newOption.textContent = name;
-        newOption.dataset.color = categoryColorInput.value;
-
-        activeSelect.insertBefore(newOption, activeSelect.querySelector('option[value="novo"]'));
-        activeSelect.value = name;
-        aplicarFiltrosLeads();
-    }
-
-    categoryModal.classList.remove('active');
-    activeSelect = null;
 });
 
 // Inicialização
