@@ -13,7 +13,7 @@ PLANILHA_ID = os.getenv("SPREADSHEET_ID")
 COLUNAS_LEADS = [
     "id", "criado_em", "empresa", "nome_completo", "email", "whatsapp",
     "nicho", "cidade", "descricao", "solucao_interesse", "origem", "status",
-    "responsavel_sdr", "prioridade_ia", "indicador_intencao", "justificativa_ia",
+    "responsavel_sdr", "prioridade_ia", "justificativa_ia",
     "sugestao_abordagem", "status_ia"
 ]
 
@@ -53,7 +53,7 @@ def obter_lista(nome_coluna: str) -> List[str]:
     return [item.strip() for item in valores[1:] if item.strip()]
 
 
-def obter_todas_listas() -> dict:
+def obter_listas() -> dict:
     planilha = conectar_planilha()
     aba = planilha.worksheet("Listas")
     todas_linhas = aba.get_all_values()

@@ -9,6 +9,8 @@ class LeadWebhookSchema(BaseModel):
     whatsapp: str
     descricao: str
     solucao_interesse: str
+    nicho: Optional[str] = ""
+    cidade: Optional[str] = ""
 
 
 class LeadCreateSchema(BaseModel):
@@ -22,7 +24,7 @@ class LeadCreateSchema(BaseModel):
     solucao_interesse: Optional[str] = ""
     origem: Optional[str] = "SITE"
     status: Optional[str] = "Novo"
-    responsavel_sdr: Optional[str] = "SITE"
+    responsavel_sdr: Optional[str] = None
 
 
 class LeadFrontendSchema(BaseModel):
@@ -35,6 +37,23 @@ class LeadFrontendSchema(BaseModel):
     solucao_interesse: str
     descricao: str
 
+
+class LeadUpdateSchema(BaseModel):
+    empresa: Optional[str] = None
+    nome_completo: Optional[str] = None
+    whatsapp: Optional[str] = None
+    email: Optional[str] = None
+    nicho: Optional[str] = None
+    cidade: Optional[str] = None
+    solucao_interesse: Optional[str] = None
+    descricao: Optional[str] = None
+    origem: Optional[str] = None
+    status: Optional[str] = None
+    responsavel_sdr: Optional[str] = None
+    prioridade_ia: Optional[str] = None
+    justificativa_ia: Optional[str] = None
+    sugestao_abordagem: Optional[str] = None
+    status_ia: Optional[str] = None
 
 
 class InteracaoCreateSchema(BaseModel):
