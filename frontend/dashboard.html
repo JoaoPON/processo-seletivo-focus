@@ -27,7 +27,7 @@
         </button>
 
         <button class="navbar-btn" data-tab="calendar">
-            <span>Calendário</span>
+            <span>Agendamentos</span>
         </button>
 
         <button class="navbar-btn" data-tab="adm">
@@ -48,13 +48,13 @@
             <div class="leads-header">
                 <h1>Leads</h1>
                 <div class="leads-buttons">
-                    <button class="list">Importar Lista</button>
-                    <button class="new">+ Novo</button>
+                    <button class="list" id="refresh-leads-btn1">Atualizar Lista</button>
+                    <button class="new" id="new-lead-btn">+ Novo</button>
                 </div>
             </div>
 
             <div class="search">
-                <input placeholder="Buscar por nome ou telefone..." type="text">
+                <input id="search-input" placeholder="Buscar por empresa, contato ou telefone..." type="text">
             </div>
 
             <!--segmentos e status-->
@@ -76,31 +76,7 @@
 
             <!--lista de clientes-->
             <div class="client-list" id="client-list">
-                <button class="client-item" data-endereco="Rua das Flores, 123 - Centro" data-funcionamento="08:00 às 18:00">
-                    <span class="client-avatar">C1</span>
-                    <span class="client-info">
-                        <span class="client-name">Cliente 1</span>
-                        <span class="client-sub">
-                            <span class="client-segment">Escola</span>
-                            ·
-                            <span class="client-number">(22)12345-6789</span>
-                        </span>
-                    </span>
-                    <span class="client-status">Reunião marcada</span>
-                </button>
-
-                <button class="client-item" data-endereco="Av. Principal, 450 - Sala 2" data-funcionamento="07:00 às 22:00">
-                    <span class="client-avatar">C2</span>
-                    <span class="client-info">
-                        <span class="client-name">Cliente 2</span>
-                        <span class="client-sub">
-                            <span class="client-segment">Faculdade</span>
-                            ·
-                            <span class="client-number">(22)98765-4321</span>
-                        </span>
-                    </span>
-                    <span class="client-status">Reunião marcada</span>
-                </button>
+                
             </div>
         </div>
 
@@ -112,39 +88,55 @@
 
             <!--informações do cliente-->
             <div class="details-body">
-                <div>
-                    <span class="client-status" id="detail-status">Reunião marcada</span>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span class="client-status" id="detail-status">Novo</span>
+                    <span class="client-status" id="detail-ia-badge" style="background-color: #e0e7ff; color: #3730a3;">IA: Pendente</span>
+                    <button class="list" id="refresh-leads-btn2" style="margin-left: auto; padding: 4px 10px; font-size: 12px;">Atualizar</button>
                 </div>
 
                 <div class="divider"></div>
 
                 <div class="details-row">
                     <div class="info-block">
-                        <span class="info-label">Telefone</span>
-                        <span class="info-value" id="detail-phone"> </span>
+                        <span class="info-label">Contato</span>
+                        <span class="info-value" id="detail-contact">-</span>
                     </div>
                     <div class="info-block">
-                        <span class="info-label">Segmento</span>
-                        <span class="info-value" id="detail-segment"> </span>
+                        <span class="info-label">WhatsApp</span>
+                        <span class="info-value" id="detail-phone">-</span>
                     </div>
                     <div class="info-block">
-                        <span class="info-label">Endereço</span>
-                        <span class="info-value" id="detail-address"> </span>
+                        <span class="info-label">Nicho / Cidade</span>
+                        <span class="info-value" id="detail-segment">-</span>
+                    </div>
+                </div>
+
+                <div class="details-row">
+                    <div class="info-block">
+                        <span class="info-label">E-mail</span>
+                        <span class="info-value" id="detail-email">-</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Solução de Interesse</span>
+                        <span class="info-value" id="detail-solution">-</span>
+                    </div>
+                    <div class="info-block">
+                        <span class="info-label">Origem</span>
+                        <span class="info-value" id="detail-origin">-</span>
                     </div>
                 </div>
 
                 <div class="info-block">
-                    <span class="info-label">Funcionamento</span>
-                    <span class="info-value" id="detail-hours"> </span>
+                    <span class="info-label">Descrição / Necessidade</span>
+                    <span class="info-value" id="detail-description">-</span>
                 </div>
 
                 <div class="divider"></div>
 
-                <div class="history-section">
-                    <h2>Histórico de ligações (0)</h2>
-                    <div class="history-box">
-                        <!--adc o histórico de ligações aqui-->
-                    </div>
+                <div class="info-block" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--div);">
+                    <span class="info-label" style="color: var(--navbar); font-weight: 600;">Qualificação Gemini IA</span>
+                    <p id="detail-ia-justificativa" style="font-size: 13px; margin-top: 6px; color: var(--txt-2);">Aguardando análise...</p>
+                    <p id="detail-ia-abordagem" style="font-size: 13px; margin-top: 8px; color: var(--txt-1);"><strong>Sugestão de abordagem:</strong> -</p>
                 </div>
             </div>
         </div>
@@ -193,6 +185,51 @@
                 <button class="list" id="close-category-btn">Cancelar</button>
                 <button class="new" id="save-category-btn">Salvar</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Popup Novo Lead -->
+    <div class="modal-overlay" id="new-lead-modal">
+        <div class="modal-content" style="height: auto; max-height: 90vh; overflow-y: auto; width: 440px;">
+            <h2>Novo Lead</h2>
+            <form id="new-lead-form" class="modal-form">
+                <div class="form-group">
+                    <label for="lead-empresa">Empresa *</label>
+                    <input type="text" id="lead-empresa" required placeholder="Ex: Clínica Sorriso">
+                </div>
+                <div class="form-group">
+                    <label for="lead-nome">Nome do Contato *</label>
+                    <input type="text" id="lead-nome" required placeholder="Ex: Dra. Ana">
+                </div>
+                <div class="form-group">
+                    <label for="lead-whatsapp">WhatsApp *</label>
+                    <input type="text" id="lead-whatsapp" required placeholder="Ex: 22999999999">
+                </div>
+                <div class="form-group">
+                    <label for="lead-email">E-mail</label>
+                    <input type="text" id="lead-email" placeholder="ana@clinica.com">
+                </div>
+                <div class="form-group">
+                    <label for="lead-nicho">Nicho</label>
+                    <input type="text" id="lead-nicho" placeholder="Ex: Saúde">
+                </div>
+                <div class="form-group">
+                    <label for="lead-cidade">Cidade</label>
+                    <input type="text" id="lead-cidade" placeholder="Ex: Campos dos Goytacazes">
+                </div>
+                <div class="form-group">
+                    <label for="lead-solucao">Solução de Interesse *</label>
+                    <input type="text" id="lead-solucao" required placeholder="Ex: Automação de Atendimento">
+                </div>
+                <div class="form-group">
+                    <label for="lead-descricao">Descrição *</label>
+                    <input type="text" id="lead-descricao" required placeholder="Ex: Quer automatizar agendamentos no WhatsApp">
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="list" id="close-new-lead-btn">Cancelar</button>
+                    <button type="submit" class="new" id="submit-new-lead-btn">Salvar Lead</button>
+                </div>
+            </form>
         </div>
     </div>
 

@@ -25,6 +25,18 @@ class LeadCreateSchema(BaseModel):
     responsavel_sdr: Optional[str] = "SITE"
 
 
+class LeadFrontendSchema(BaseModel):
+    empresa: str
+    nome_completo: str
+    whatsapp: str
+    email: Optional[str] = ""
+    nicho: Optional[str] = ""
+    cidade: Optional[str] = ""
+    solucao_interesse: str
+    descricao: str
+
+
+
 class InteracaoCreateSchema(BaseModel):
     id_lead: str
     acao: str
