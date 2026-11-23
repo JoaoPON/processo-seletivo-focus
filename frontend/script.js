@@ -56,9 +56,10 @@ window.addEventListener('resize', () => {
 
 checkScreenWidth();
 
-stripToggle.addEventListener('click', () => {
+stripToggle?.addEventListener('click', () => {
     mainLayout.classList.toggle('leads-expanded');
 });
+
 
 
 
@@ -132,7 +133,7 @@ async function carregarListas() {
 
         const statusOpcoes = (todasListas.status && todasListas.status.length)
             ? todasListas.status
-            : ["Novo", "Em contato", "Reunião marcada", "Proposta enviada", "Fechado", "Perdido"];
+            : ["Novo", "Em contato", "RD marcada", "Contrato", "Descartado"];
         preencherSelect(document.getElementById('detail-status-select'), statusOpcoes);
 
         const acoesOpcoes = (todasListas.acoes && todasListas.acoes.length)
@@ -141,9 +142,9 @@ async function carregarListas() {
         preencherSelect(document.getElementById('interacao-acao'), acoesOpcoes);
         preencherSelect(document.getElementById('interacao-responsavel'), todasListas.membros || [], "Selecione o responsável...");
         preencherSelect(document.getElementById('interacao-resultado'), todasListas.resultado || [], "Sem resultado específico");
-        preencherSelect(document.getElementById('lead-sdr'), todasListas.membros || [], "Não atribuído");
+        preencherSelect(document.getElementById('lead-sdr'), todasListas.membros || [], "Não atribuído (Origem SITE)");
 
-        // Filtros da aba de Agendamentos
+        // Filtros da aba Agendamentos
         preencherSelect(document.getElementById('cal-filter-resp'), todasListas.membros || [], "Todos Responsáveis");
         preencherSelect(document.getElementById('cal-filter-acao'), acoesOpcoes, "Todas Ações");
 
@@ -217,7 +218,7 @@ function preencherDetalhesLead(lead) {
         opt.textContent = lead.status;
         statusSelect.appendChild(opt);
     }
-    statusSelect.value = lead.status || 'Novo';
+    statusSelect.value = lead.status || (todasListas.status?.[0] || 'Novo');
 
     document.getElementById('detail-origin').textContent = lead.origem || 'SITE';
     document.getElementById('detail-contact').textContent = lead.nome_completo || '-';
@@ -225,7 +226,7 @@ function preencherDetalhesLead(lead) {
     document.getElementById('detail-segment').textContent = [lead.nicho, lead.cidade].filter(Boolean).join(' · ') || '-';
     document.getElementById('detail-email').textContent = lead.email || '-';
     document.getElementById('detail-solution').textContent = lead.solucao_interesse || '-';
-    document.getElementById('detail-sdr').textContent = lead.responsavel_sdr || 'Não atribuído';
+    document.getElementById('detail-sdr').textContent = lead.responsavel_sdr || 'Origem SITE';
     document.getElementById('detail-description').textContent = lead.descricao || '-';
 
     // Dados da IA (Gemini)
@@ -244,7 +245,7 @@ function preencherDetalhesLead(lead) {
 }
 
 async function salvarStatusLead(leadIdAlvo, novoStatus) {
-    if (!leadIdAlvo) return;
+    if (!leadIdAlvo || !novoStatus) return;
     const resp = await fetch(`${API_BASE}/api/leads/${leadIdAlvo}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -423,7 +424,7 @@ newLeadForm?.addEventListener('submit', async (e) => {
     }
 });
 
-// Interações do Lead
+// Interações de Leads
 
 async function carregarInteracoesDoLead(leadId) {
     const box = document.getElementById('lead-history-list');
@@ -581,7 +582,6 @@ window.abrirModalInteracao = function(modo, interacaoId = null) {
             document.getElementById('interacao-hora-realizada').value = horaAtual;
         }
     } else {
-
         const item = interacoesDoLeadAtual.find(i => i.id === interacaoId)
             || todasInteracoes.find(i => i.id === interacaoId);
         if (!item) return;
@@ -661,11 +661,13 @@ interactionForm?.addEventListener('submit', async (e) => {
 
         if (!resp.ok) throw new Error('Erro ao salvar interação');
 
-        // Automatização do status do lead
-        if (dados.data_realizada && interacaoLeadAlvoId) {
+        // Automaticação do status do lead
+        if (dados.data_realizada && interacaoLeadAlvoId && todasListas.status && todasListas.status.length >= 2) {
             const leadAtual = todosLeads.find(l => l.id === interacaoLeadAlvoId);
-            if (leadAtual && (!leadAtual.status || leadAtual.status === 'Novo')) {
-                await salvarStatusLead(interacaoLeadAlvoId, 'Em contato');
+            const primeiroStatus = todasListas.status[0];
+            const segundoStatus = todasListas.status[1];
+            if (leadAtual && (!leadAtual.status || leadAtual.status === primeiroStatus)) {
+                await salvarStatusLead(interacaoLeadAlvoId, segundoStatus);
             }
         }
 
@@ -677,6 +679,9 @@ interactionForm?.addEventListener('submit', async (e) => {
         if (document.getElementById('screen-calendar')?.classList.contains('active')) {
             await carregarAgendamentos();
         }
+        if (document.getElementById('screen-adm')?.classList.contains('active')) {
+            await carregarGerencia();
+        }
     } catch (erro) {
         alert('Não foi possível salvar a interação.');
         console.error(erro);
@@ -686,7 +691,9 @@ interactionForm?.addEventListener('submit', async (e) => {
     }
 });
 
-// Aba Agendamentos
+
+
+// Agendamentos
 
 async function carregarAgendamentos() {
     const container = document.getElementById('calendar-sections');
@@ -717,7 +724,6 @@ function renderizarAgendamentos() {
     const hojeISO = obterDataHojeISO();
     const leadsMap = Object.fromEntries(todosLeads.map(l => [l.id, l]));
 
-    // Considera apenas interações que possuem data_agendada preenchida
     const agendados = todasInteracoes
         .filter(item => Boolean((item.data_agendada || '').trim()))
         .map(item => {
@@ -866,7 +872,6 @@ window.irParaLead = function(leadId) {
         return;
     }
 
-    // Ativa a aba Leads na navbar
     const btnLeads = document.querySelector('.navbar-btn[data-tab="leads"]');
     if (btnLeads) {
         document.querySelector('.navbar-btn.active')?.classList.remove('active');
@@ -887,6 +892,306 @@ document.getElementById('cal-search')?.addEventListener('input', renderizarAgend
 document.getElementById('cal-filter-resp')?.addEventListener('change', renderizarAgendamentos);
 document.getElementById('cal-filter-acao')?.addEventListener('change', renderizarAgendamentos);
 document.getElementById('cal-filter-situacao')?.addEventListener('change', renderizarAgendamentos);
+
+
+
+// Gerência
+
+async function carregarGerencia() {
+    const btn = document.getElementById('refresh-adm-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Atualizando...';
+    }
+
+    try {
+        const [, respLeads, respInteracoes] = await Promise.all([
+            carregarListas(),
+            fetch(`${API_BASE}/api/leads`),
+            fetch(`${API_BASE}/api/interacoes`)
+        ]);
+
+        if (!respLeads.ok || !respInteracoes.ok) {
+            throw new Error('Falha ao carregar dados gerenciais');
+        }
+
+        todosLeads = await respLeads.json();
+        todasInteracoes = await respInteracoes.json();
+        aplicarFiltrosLeads();
+        renderizarGerencia();
+    } catch (erro) {
+        console.error(erro);
+        alert('Não foi possível atualizar os dados do painel.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'Atualizar Painel';
+        }
+    }
+}
+
+function obterChaveSemana(dataStr) {
+    const iso = normalizarDataISO(dataStr);
+    if (!iso || iso.length < 10) return null;
+    const d = new Date(`${iso.slice(0, 10)}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return null;
+
+    // Ajusta para segunda-feira daquela semana
+    const diaSemana = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - diaSemana);
+
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return {
+        chave: `${d.getFullYear()}-${mm}-${dd}`,
+        label: `${dd}/${mm}`
+    };
+}
+
+function renderizarBarraEmpilhada(containerId, itens, total) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    if (!itens.length || total === 0) {
+        el.innerHTML = '<p style="color: var(--txt-3); font-size: 13px;">Sem dados registrados.</p>';
+        return;
+    }
+
+    const pct = (v) => (total > 0 ? Math.round((v / total) * 100) : 0);
+
+    el.innerHTML = `
+        <div class="adm-stk">
+            ${itens.map(it => `<i style="width: ${total > 0 ? (it.qtd / total) * 100 : 0}%; background-color: ${it.cor};" title="${it.label}: ${it.qtd}"></i>`).join('')}
+        </div>
+        <div class="adm-lg">
+            ${itens.map(it => `
+                <span>
+                    <u style="background-color: ${it.cor};"></u>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${it.label}</span>
+                    <b>${it.qtd} (${pct(it.qtd)}%)</b>
+                </span>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderizarGerencia() {
+    const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
+    const norm = (txt) => (txt || '').trim().toLowerCase();
+
+    const realizadas = todasInteracoes.filter(i => Boolean((i.data_realizada || '').trim()));
+
+    const ehContatoEfetivo = (i) => {
+        const res = norm(i.resultado);
+        return res === 'atendeu' || res === 'rd marcada';
+    };
+
+    const efetivasCount = realizadas.filter(ehContatoEfetivo).length;
+
+    const leadsTrabalhadosSet = new Set(realizadas.map(i => i.id_lead).filter(Boolean));
+    const totalLeads = todosLeads.length;
+    const trabalhadosCount = todosLeads.filter(l => leadsTrabalhadosSet.has(l.id)).length;
+    const semContatoCount = Math.max(0, totalLeads - trabalhadosCount);
+
+    const reunioesMarcadasCount = todosLeads.filter(l => norm(l.status) === 'rd marcada').length;
+
+    const sdrsAtivos = new Set([
+        ...(todasListas.membros || []),
+        ...todosLeads.map(l => (l.responsavel_sdr || '').trim()).filter(Boolean),
+        ...realizadas.map(i => (i.responsavel || '').trim()).filter(Boolean)
+    ]);
+
+    // 4 KPIs
+    document.getElementById('adm-kpi-leads').textContent = totalLeads;
+    document.getElementById('adm-kpi-trabalhados').textContent = `${trabalhadosCount} já trabalhados`;
+
+    document.getElementById('adm-kpi-interacoes').textContent = realizadas.length;
+    document.getElementById('adm-kpi-efetivo').textContent = `${pct(efetivasCount, realizadas.length)}% com contato efetivo`;
+
+    document.getElementById('adm-kpi-reunioes').textContent = reunioesMarcadasCount;
+    document.getElementById('adm-kpi-conversao').textContent = `${pct(reunioesMarcadasCount, trabalhadosCount)}% dos leads convertidos`;
+
+    document.getElementById('adm-kpi-sem-contato').textContent = semContatoCount;
+
+    // Gráfico
+    const mapaSemanas = {};
+    realizadas.forEach(i => {
+        const sem = obterChaveSemana(i.data_realizada);
+        if (!sem) return;
+        if (!mapaSemanas[sem.chave]) {
+            mapaSemanas[sem.chave] = { label: sem.label, total: 0, rds: 0 };
+        }
+        mapaSemanas[sem.chave].total += 1;
+        if (norm(i.resultado) === 'rd marcada') {
+            mapaSemanas[sem.chave].rds += 1;
+        }
+    });
+
+    const semanasOrdenadas = Object.entries(mapaSemanas)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .slice(-8);
+
+    const chartSemanalEl = document.getElementById('adm-chart-semanal');
+    if (!semanasOrdenadas.length) {
+        chartSemanalEl.innerHTML = '<p style="color: var(--txt-3); font-size: 13px; margin: auto;">Nenhuma interação realizada registrada ainda.</p>';
+    } else {
+        const maxVal = Math.max(1, ...semanasOrdenadas.map(([, v]) => v.total));
+        chartSemanalEl.innerHTML = semanasOrdenadas.map(([, s]) => `
+            <div>
+                <div class="bs">
+                    <i style="height: ${(s.total / maxVal) * 84}%; background-color: var(--navbar);"><s>${s.total}</s></i>
+                    <i style="height: ${(s.rds / maxVal) * 84}%; background-color: var(--btn);"><s>${s.rds || ''}</s></i>
+                </div>
+                <small>${s.label}</small>
+            </div>
+        `).join('');
+    }
+
+    // Desempenho da equipe
+    const tbodyEquipe = document.getElementById('adm-tbody-equipe');
+    const equipeLista = [...sdrsAtivos].map(membro => {
+        const leadsCadastrados = todosLeads.filter(l => (l.responsavel_sdr || '').trim() === membro).length;
+        const interMembro = realizadas.filter(i => (i.responsavel || '').trim() === membro);
+        const rdsMembro = interMembro.filter(i => norm(i.resultado) === 'rd marcada').length;
+        const efetivasMembro = interMembro.filter(ehContatoEfetivo).length;
+        const taxaEfetiva = pct(efetivasMembro, interMembro.length);
+
+        return {
+            nome: membro,
+            leads: leadsCadastrados,
+            interacoes: interMembro.length,
+            rds: rdsMembro,
+            taxaEfetiva
+        };
+    }).sort((a, b) => b.interacoes - a.interacoes || b.leads - a.leads);
+
+    tbodyEquipe.innerHTML = equipeLista.length
+        ? equipeLista.map(m => `
+            <tr>
+                <td><b>${m.nome}</b></td>
+                <td class="n">${m.leads}</td>
+                <td class="n">${m.interacoes}</td>
+                <td class="n">${m.rds}</td>
+                <td>
+                    <div class="adm-mb">
+                        <div><i style="width: ${m.taxaEfetiva}%;"></i></div>
+                        <span>${m.taxaEfetiva}%</span>
+                    </div>
+                </td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="5" style="color: var(--txt-3); font-size: 13px;">Nenhum membro cadastrado na aba Listas.</td></tr>';
+
+    // Distribuição por Status
+    const paletaCores = ['#94a3b8', '#17717f', '#2e8b57', '#d4a336', '#dc2626', '#6366f1', '#0ea5e9', '#ec4899'];
+    const ordemStatus = [...(todasListas.status || [])];
+    todosLeads.forEach(l => {
+        const st = (l.status || '').trim();
+        if (st && !ordemStatus.includes(st)) ordemStatus.push(st);
+    });
+
+    const dadosStatus = ordemStatus.map((st, idx) => ({
+        label: st,
+        qtd: todosLeads.filter(l => (l.status || '').trim() === st).length,
+        cor: paletaCores[idx % paletaCores.length]
+    })).filter(it => it.qtd > 0);
+
+    renderizarBarraEmpilhada('adm-status-panel', dadosStatus, totalLeads);
+
+    // Origem dos Leads & Resultados
+    const contagemOrigem = {};
+    todosLeads.forEach(l => {
+        const orig = (l.origem || '').trim().toUpperCase() || (!(l.responsavel_sdr || '').trim() ? 'SITE' : 'MANUAL');
+        contagemOrigem[orig] = (contagemOrigem[orig] || 0) + 1;
+    });
+
+    const origensOrdenadas = Object.entries(contagemOrigem).sort((a, b) => b[1] - a[1]);
+    const maxOrigem = Math.max(1, ...origensOrdenadas.map(([, v]) => v));
+    const origemEl = document.getElementById('adm-origem-bars');
+
+    origemEl.innerHTML = origensOrdenadas.length
+        ? origensOrdenadas.map(([orig, qtd]) => `
+            <div class="adm-bar">
+                <span>${orig}</span>
+                <div class="adm-track"><i style="width: ${(qtd / maxOrigem) * 100}%;"></i></div>
+                <b>${qtd} (${pct(qtd, totalLeads)}%)</b>
+            </div>
+        `).join('')
+        : '<p style="color: var(--txt-3); font-size: 13px;">Sem leads cadastrados.</p>';
+
+    const ordemResultados = [...(todasListas.resultado || [])];
+    realizadas.forEach(i => {
+        const res = (i.resultado || '').trim();
+        if (res && !ordemResultados.includes(res)) ordemResultados.push(res);
+    });
+
+    const corResultado = (res, idx) => {
+        const r = norm(res);
+        if (r === 'rd marcada') return '#2e8b57';
+        if (r === 'atendeu') return '#17717f';
+        if (r === 'não atendeu' || r === 'nao atendeu') return '#d4a336';
+        if (r === 'sem interesse' || r === 'descartado') return '#dc2626';
+        return paletaCores[(idx + 2) % paletaCores.length];
+    };
+
+    const dadosResultados = ordemResultados.map((res, idx) => ({
+        label: res,
+        qtd: realizadas.filter(i => (i.resultado || '').trim() === res).length,
+        cor: corResultado(res, idx)
+    })).filter(it => it.qtd > 0);
+
+    const semResCount = realizadas.filter(i => !(i.resultado || '').trim()).length;
+    if (semResCount > 0) {
+        dadosResultados.push({ label: 'Sem resultado', qtd: semResCount, cor: '#94a3b8' });
+    }
+
+    renderizarBarraEmpilhada('adm-resultado-panel', dadosResultados, realizadas.length);
+
+    // Leads por Nicho
+    const nichosSet = new Set(todasListas.nichos || []);
+    todosLeads.forEach(l => { if ((l.nicho || '').trim()) nichosSet.add(l.nicho.trim()); });
+
+    const listaNichos = [...nichosSet].map(nicho => {
+        const doNicho = todosLeads.filter(l => (l.nicho || '').trim() === nicho);
+        const rdsNicho = doNicho.filter(l => norm(l.status) === 'rd marcada').length;
+        return {
+            nicho,
+            total: doNicho.length,
+            rds: rdsNicho,
+            conv: pct(rdsNicho, doNicho.length)
+        };
+    }).filter(n => n.total > 0).sort((a, b) => b.total - a.total);
+
+    const semNicho = todosLeads.filter(l => !(l.nicho || '').trim());
+    if (semNicho.length > 0) {
+        const rdsSem = semNicho.filter(l => norm(l.status) === 'rd marcada').length;
+        listaNichos.push({
+            nicho: 'Sem nicho',
+            total: semNicho.length,
+            rds: rdsSem,
+            conv: pct(rdsSem, semNicho.length)
+        });
+    }
+
+    const tbodyNichos = document.getElementById('adm-tbody-nichos');
+    tbodyNichos.innerHTML = listaNichos.length
+        ? listaNichos.map(n => `
+            <tr>
+                <td><b>${n.nicho}</b></td>
+                <td class="n">${n.total}</td>
+                <td class="n">${n.rds}</td>
+                <td>
+                    <div class="adm-mb">
+                        <div><i style="width: ${n.conv}%;"></i></div>
+                        <span>${n.conv}%</span>
+                    </div>
+                </td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="4" style="color: var(--txt-3); font-size: 13px;">Nenhum nicho registrado.</td></tr>';
+}
+
+document.getElementById('refresh-adm-btn')?.addEventListener('click', carregarGerencia);
 
 // Barra de Navegação
 
@@ -912,8 +1217,9 @@ navButtons.forEach(btn => {
         } else if (target === 'calendar') {
             document.getElementById('screen-calendar')?.classList.add('active');
             carregarAgendamentos();
-        } else {
-            document.getElementById(`screen-${target}`)?.classList.add('active');
+        } else if (target === 'adm') {
+            document.getElementById('screen-adm')?.classList.add('active');
+            carregarGerencia();
         }
     });
 });

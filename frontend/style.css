@@ -1106,3 +1106,336 @@ body {
         justify-content: flex-end;
     }
 }
+
+/* Aba de Gerência */
+
+.adm-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+}
+
+.adm-top h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--txt-1);
+    margin: 0;
+}
+
+.adm-top p {
+    margin: 3px 0 0;
+    color: var(--txt-3);
+    font-size: 13px;
+}
+
+/* 4 KPIs no topo */
+.adm-krow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background-color: var(--bg-1);
+    border: 1px solid var(--div);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    flex-shrink: 0;
+    overflow: visible;
+}
+
+.adm-kpi {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+}
+
+.adm-kpi + .adm-kpi {
+    border-left: 1px solid var(--div);
+}
+
+.adm-kpi span {
+    font-size: 13px;
+    color: var(--txt-3);
+}
+
+.adm-kpi b {
+    display: block;
+    font-size: 32px;
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 6px 0 4px;
+    color: var(--txt-1);
+}
+
+.adm-kpi em {
+    font-style: normal;
+    font-size: 12px;
+    color: var(--txt-3);
+}
+
+.adm-kpi em.up {
+    color: var(--stts-txt);
+    font-weight: 500;
+}
+
+/* Grade de 12 colunas */
+.adm-dg {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 18px;
+    padding-bottom: 24px;
+}
+
+.adm-pn {
+    background-color: var(--bg-1);
+    border: 1px solid var(--div);
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 0;
+}
+
+.adm-pn.w7 { grid-column: span 7; }
+.adm-pn.w5 { grid-column: span 5; }
+.adm-pn.w4 { grid-column: span 4; }
+
+.adm-pn h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--txt-1);
+}
+
+.adm-pn .sub {
+    margin: 2px 0 16px;
+    color: var(--txt-3);
+    font-size: 13px;
+}
+
+/* Gráfico de barras verticais por semana */
+.adm-wk {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 185px;
+    padding-top: 20px;
+}
+
+.adm-wk > div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+    justify-content: flex-end;
+}
+
+.adm-wk .bs {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+}
+
+.adm-wk .bs i {
+    display: block;
+    position: relative;
+    width: 42%;
+    max-width: 26px;
+    border-radius: 5px 5px 0 0;
+    min-height: 2px;
+}
+
+.adm-wk s {
+    position: absolute;
+    top: -17px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--txt-2);
+}
+
+.adm-wk small {
+    color: var(--txt-3);
+    font-size: 12px;
+}
+
+/* Barra empilhada horizontal + legenda */
+.adm-stk {
+    display: flex;
+    height: 14px;
+    border-radius: 7px;
+    overflow: hidden;
+    gap: 2px;
+    margin: 6px 0 16px;
+    background-color: #f1f5f9;
+}
+
+.adm-stk i {
+    display: block;
+    height: 100%;
+}
+
+.adm-lg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px 16px;
+    font-size: 13px;
+    color: var(--txt-2);
+}
+
+.adm-lg span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.adm-lg u {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.adm-lg b {
+    margin-left: auto;
+    font-weight: 600;
+    color: var(--txt-1);
+    white-space: nowrap;
+}
+
+/* Tabelas internas com micro-barra */
+.adm-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.adm-tb {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.adm-tb th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--txt-3);
+    font-size: 12px;
+    padding: 0 8px 8px 0;
+    border-bottom: 1px solid var(--div);
+    white-space: nowrap;
+}
+
+.adm-tb td {
+    padding: 10px 8px 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--txt-1);
+}
+
+.adm-tb tr:last-child td {
+    border-bottom: 0;
+}
+
+.adm-tb .n {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.adm-mb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.adm-mb div {
+    flex: 1;
+    height: 6px;
+    background-color: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.adm-mb i {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--stts-txt);
+}
+
+.adm-mb span {
+    flex: none;
+    width: 34px;
+    text-align: right;
+    font-size: 12px;
+    color: var(--txt-2);
+}
+
+/* Barras horizontais simples (Origem dos Leads) */
+.adm-bar {
+    display: grid;
+    grid-template-columns: 105px 1fr 48px;
+    gap: 10px;
+    align-items: center;
+    margin: 9px 0;
+    font-size: 13px;
+    color: var(--txt-2);
+}
+
+.adm-bar b {
+    font-size: 13px;
+    text-align: right;
+    color: var(--txt-1);
+}
+
+.adm-track {
+    background-color: #f1f5f9;
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.adm-track i {
+    display: block;
+    height: 8px;
+    border-radius: 4px;
+    background-color: var(--navbar);
+}
+
+@media (max-width: 1150px) {
+    .adm-krow {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .adm-kpi:nth-child(3) {
+        border-left: 0;
+    }
+    .adm-kpi:nth-child(3),
+    .adm-kpi:nth-child(4) {
+        border-top: 1px solid var(--div);
+    }
+    .adm-pn.w7,
+    .adm-pn.w5 {
+        grid-column: span 12;
+    }
+    .adm-pn.w4 {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 760px) {
+    .adm-krow {
+        grid-template-columns: 1fr;
+    }
+    .adm-kpi + .adm-kpi {
+        border-left: 0;
+        border-top: 1px solid var(--div);
+    }
+    .adm-pn.w4 {
+        grid-column: span 12;
+    }
+}

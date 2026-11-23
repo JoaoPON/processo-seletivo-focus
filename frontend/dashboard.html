@@ -10,7 +10,7 @@
 
 <body>
 
-    <!--barra de navegação-->
+    <!-- Barra de navegação -->
     <nav class="navbar">
         <div class="nav-pill" id="nav-pill"></div>
 
@@ -36,7 +36,7 @@
     </nav>
 
     <div class="main-layout" id="main-layout">
-        <!--quadro de leads (full/esquerda)-->
+        <!-- Quadro de Leads -->
         <div class="dashboard">
             <button class="leads-strip-toggle" id="leads-strip-toggle" title="Mostrar Leads">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
@@ -57,7 +57,7 @@
                 <input id="search-input" placeholder="Buscar por empresa, contato ou telefone..." type="text">
             </div>
 
-            <!--segmentos e status (preenchidos via /api/listas)-->
+            <!-- Segmentos e Status -->
             <div class="select">
                 <select name="segments" id="segments">
                     <option value="">Todos Nichos</option>
@@ -68,7 +68,7 @@
                 </select>
             </div>
 
-            <!--lista de clientes-->
+            <!-- Lista de Clientes -->
             <div class="client-list" id="client-list"></div>
         </div>
 
@@ -82,7 +82,7 @@
                 </div>
             </div>
 
-            <!--informações do cliente-->
+            <!-- Informações do Cliente -->
             <div class="details-body">
                 <div class="detail-controls">
                     <select id="detail-status-select" class="detail-select" title="Status do Lead"></select>
@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <!--página de agendamentos-->
+    <!-- Página de agendamentos -->
     <div class="blank-screen" id="screen-calendar">
         <div class="cal-header">
             <h1>Agendamentos</h1>
@@ -195,8 +195,106 @@
             <p style="color: var(--txt-3); font-size: 13px;">Carregando agendamentos...</p>
         </div>
     </div>
-    <!--página de gerência-->
-    <div class="blank-screen" id="screen-adm"></div>
+
+    <!-- Página de Gerência -->
+    <div class="blank-screen" id="screen-adm">
+        <div class="adm-top">
+            <div>
+                <h1>Visão Geral Comercial</h1>
+            </div>
+            <button class="list" id="refresh-adm-btn">Atualizar Painel</button>
+        </div>
+
+        <!-- 4 KPIs -->
+        <div class="adm-krow">
+            <div class="adm-kpi">
+                <span>Leads cadastrados</span>
+                <b id="adm-kpi-leads">0</b>
+                <em id="adm-kpi-trabalhados">0 já trabalhados</em>
+            </div>
+            <div class="adm-kpi">
+                <span>Interações realizadas</span>
+                <b id="adm-kpi-interacoes">0</b>
+                <em id="adm-kpi-efetivo">0% com contato efetivo</em>
+            </div>
+            <div class="adm-kpi">
+                <span>Reuniões marcadas</span>
+                <b id="adm-kpi-reunioes">0</b>
+                <em class="up" id="adm-kpi-conversao">0% dos leads convertidos</em>
+            </div>
+            <div class="adm-kpi">
+                <span>Sem primeira ligação</span>
+                <b id="adm-kpi-sem-contato">0</b>
+                <em>aguardando contato</em>
+            </div>
+        </div>
+
+        <!-- Grade Principal -->
+        <div class="adm-dg">
+            <!-- Linha 1 -->
+            <section class="adm-pn w7">
+                <h4>Interações por semana</h4>
+                <p class="sub">Total de interações e reuniões marcadas a cada semana</p>
+                <div class="adm-wk" id="adm-chart-semanal"></div>
+                <div class="adm-lg" style="margin-top: 14px;">
+                    <span><u style="background: var(--navbar);"></u>Interações realizadas</span>
+                    <span><u style="background: var(--btn);"></u>Reuniões marcadas (RD)</span>
+                </div>
+            </section>
+
+            <section class="adm-pn w5">
+                <h4>Desempenho da equipe</h4>
+                <p class="sub">Captação como SDR e interações executadas por membro</p>
+                <div class="adm-table-wrap">
+                    <table class="adm-tb">
+                        <thead>
+                            <tr>
+                                <th>Membro</th>
+                                <th class="n" title="Leads cadastrados como SDR">Leads</th>
+                                <th class="n" title="Interações realizadas">Interações</th>
+                                <th class="n" title="Interações com resultado RD marcada">RDs</th>
+                                <th style="width: 32%;" title="Percentual de contato efetivo (Atendeu + RD marcada)">Efetivo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-tbody-equipe"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Linha 2 -->
+            <section class="adm-pn w4">
+                <h4>Distribuição por Status</h4>
+                <p class="sub">Em que etapa está cada lead hoje</p>
+                <div id="adm-status-panel"></div>
+            </section>
+
+            <section class="adm-pn w4">
+                <h4>Origem dos Leads & Resultados</h4>
+                <p class="sub">Canal de entrada e desfecho das interações</p>
+                <div id="adm-origem-bars"></div>
+                <div class="divider" style="margin: 14px 0;"></div>
+                <div id="adm-resultado-panel"></div>
+            </section>
+
+            <section class="adm-pn w4">
+                <h4>Leads por Nicho</h4>
+                <p class="sub">Volume por segmento e conversão em RD</p>
+                <div class="adm-table-wrap">
+                    <table class="adm-tb">
+                        <thead>
+                            <tr>
+                                <th>Nicho</th>
+                                <th class="n">Leads</th>
+                                <th class="n">RDs</th>
+                                <th style="width: 34%;">Conversão</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adm-tbody-nichos"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
 
     <!-- Modal Agendar / Registrar / Concluir Interação -->
     <div class="modal-overlay" id="call-modal">
