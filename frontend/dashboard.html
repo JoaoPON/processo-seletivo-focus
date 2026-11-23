@@ -57,40 +57,39 @@
                 <input id="search-input" placeholder="Buscar por empresa, contato ou telefone..." type="text">
             </div>
 
-            <!--segmentos e status-->
+            <!--segmentos e status (preenchidos via /api/listas)-->
             <div class="select">
                 <select name="segments" id="segments">
-                    <option value="0">Todos Segmentos</option>
-                    <option value="1">Escola</option>
-                    <option value="2">Faculdade</option>
-                    <option value="novo">Criar novo segmento</option>
+                    <option value="">Todos Nichos</option>
+                    <option value="novo">Criar novo nicho</option>
                 </select>
 
                 <select name="status" id="status">
-                    <option value="0">Todos status</option>
-                    <option value="1">Reunião marcada</option>
-                    <option value="1">Reunião cancelada</option>
-                    <option value="novo">Criar um novo status</option>
+                    <option value="">Todos Status</option>
+                    <option value="novo">Criar novo status</option>
                 </select>
             </div>
 
             <!--lista de clientes-->
-            <div class="client-list" id="client-list">
-                
-            </div>
+            <div class="client-list" id="client-list"></div>
         </div>
 
         <div class="leads-details" id="leads-details">
             <div class="leads-header">
                 <h1 id="detail-name">Dados do Cliente</h1>
-                <button class="new" id="log-call-btn">Registrar Ligação</button>
+                <div class="header-actions">
+                    <button class="list" id="edit-lead-btn">Editar</button>
+                    <button class="list" id="schedule-btn">Agendar</button>
+                    <button class="new" id="log-call-btn">+ Interação</button>
+                </div>
             </div>
 
             <!--informações do cliente-->
             <div class="details-body">
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <span class="client-status" id="detail-status">Novo</span>
+                <div class="detail-controls">
+                    <select id="detail-status-select" class="detail-select" title="Status do Lead"></select>
                     <span class="client-status" id="detail-ia-badge" style="background-color: #e0e7ff; color: #3730a3;">IA: Pendente</span>
+                    <span class="client-status" id="detail-origin" style="background-color: #f1f5f9; color: var(--txt-2);">SITE</span>
                     <button class="list" id="refresh-leads-btn2" style="margin-left: auto; padding: 4px 10px; font-size: 12px;">Atualizar</button>
                 </div>
 
@@ -121,8 +120,8 @@
                         <span class="info-value" id="detail-solution">-</span>
                     </div>
                     <div class="info-block">
-                        <span class="info-label">Origem</span>
-                        <span class="info-value" id="detail-origin">-</span>
+                        <span class="info-label">SDR Responsável</span>
+                        <span class="info-value" id="detail-sdr">-</span>
                     </div>
                 </div>
 
@@ -138,34 +137,98 @@
                     <p id="detail-ia-justificativa" style="font-size: 13px; margin-top: 6px; color: var(--txt-2);">Aguardando análise...</p>
                     <p id="detail-ia-abordagem" style="font-size: 13px; margin-top: 8px; color: var(--txt-1);"><strong>Sugestão de abordagem:</strong> -</p>
                 </div>
+
+                <div class="divider"></div>
+
+                <!-- Histórico e Agendamentos do Lead -->
+                <div class="history-section">
+                    <div class="history-header">
+                        <h2>Histórico e Agendamentos</h2>
+                    </div>
+                    <div class="history-box" id="lead-history-list">
+                        <p style="color: var(--txt-3); font-size: 13px;">Selecione um lead para ver as interações.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!--representação da página do calendário e da gerência-->
+    <!--páginas de agendamentos e gerência-->
     <div class="blank-screen" id="screen-calendar"></div>
     <div class="blank-screen" id="screen-adm"></div>
 
-    <!--registrar ligação-->
+    <!-- Modal Agendar / Registrar / Concluir Interação -->
     <div class="modal-overlay" id="call-modal">
-        <div class="modal-content">
-            <h2>Registrar Ligação</h2>
-            <p>Preencha os dados da ligação aqui...</p>
+        <div class="modal-content" style="height: auto; max-height: 92vh; overflow-y: auto; width: 460px;">
+            <h2 id="interaction-modal-title">Nova Interação</h2>
+            <form id="interaction-form" class="modal-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="interacao-acao">Ação *</label>
+                        <select id="interacao-acao" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="interacao-responsavel">Responsável *</label>
+                        <select id="interacao-responsavel" required></select>
+                    </div>
+                </div>
 
-            <!--adc dados do popup de registrar ligação-->
+                <div class="form-group">
+                    <label for="interacao-pauta">Pauta / Assunto</label>
+                    <input type="text" id="interacao-pauta" placeholder="Ex: Apresentação de proposta comercial">
+                </div>
 
-            <div class="modal-buttons">
-                <button class="list" id="close-modal-btn">Cancelar</button>
-                <button class="new">Salvar</button>
-            </div>
+                <!-- Bloco exclusivo para Agendamento -->
+                <div class="form-row-2" id="group-agendamento">
+                    <div class="form-group">
+                        <label for="interacao-data-agendada">Data Agendada *</label>
+                        <input type="date" id="interacao-data-agendada">
+                    </div>
+                    <div class="form-group">
+                        <label for="interacao-hora-agendada">Hora Agendada</label>
+                        <input type="time" id="interacao-hora-agendada">
+                    </div>
+                </div>
+
+                <!-- Bloco exclusivo para Interação Realizada / Conclusão -->
+                <div id="group-realizacao" style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="form-row-2">
+                        <div class="form-group">
+                            <label for="interacao-data-realizada">Data Realizada *</label>
+                            <input type="date" id="interacao-data-realizada">
+                        </div>
+                        <div class="form-group">
+                            <label for="interacao-hora-realizada">Hora Realizada</label>
+                            <input type="time" id="interacao-hora-realizada">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="interacao-resultado">Resultado</label>
+                        <select id="interacao-resultado">
+                            <option value="">Sem resultado específico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="interacao-observacoes">Observações</label>
+                    <textarea id="interacao-observacoes" rows="2" placeholder="Anotações da conversa..."></textarea>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="list" id="close-modal-btn">Cancelar</button>
+                    <button type="submit" class="new" id="submit-interaction-btn">Salvar</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!--TESTE popup para Novo Segmento / Status -->
+    <!-- Popup para Novo Nicho / Status -->
     <div class="modal-overlay" id="category-modal">
         <div class="modal-content small-modal">
             <h2 id="category-modal-title">Novo Item</h2>
-            
+
             <div class="modal-form">
                 <div class="form-group">
                     <label for="category-name-input">Nome</label>
@@ -188,34 +251,48 @@
         </div>
     </div>
 
-    <!-- Popup Novo Lead -->
+    <!-- Popup Novo / Editar Lead -->
     <div class="modal-overlay" id="new-lead-modal">
-        <div class="modal-content" style="height: auto; max-height: 90vh; overflow-y: auto; width: 440px;">
-            <h2>Novo Lead</h2>
+        <div class="modal-content" style="height: auto; max-height: 90vh; overflow-y: auto; width: 450px;">
+            <h2 id="lead-modal-title">Novo Lead</h2>
             <form id="new-lead-form" class="modal-form">
                 <div class="form-group">
                     <label for="lead-empresa">Empresa *</label>
                     <input type="text" id="lead-empresa" required placeholder="Ex: Clínica Sorriso">
                 </div>
-                <div class="form-group">
-                    <label for="lead-nome">Nome do Contato *</label>
-                    <input type="text" id="lead-nome" required placeholder="Ex: Dra. Ana">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="lead-nome">Nome do Contato *</label>
+                        <input type="text" id="lead-nome" required placeholder="Ex: Dra. Ana">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-whatsapp">WhatsApp *</label>
+                        <input type="text" id="lead-whatsapp" required placeholder="Ex: 22999999999">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="lead-whatsapp">WhatsApp *</label>
-                    <input type="text" id="lead-whatsapp" required placeholder="Ex: 22999999999">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="lead-email">E-mail</label>
+                        <input type="text" id="lead-email" placeholder="ana@clinica.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-sdr">SDR Responsável</label>
+                        <select id="lead-sdr">
+                            <option value="">Não atribuído</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="lead-email">E-mail</label>
-                    <input type="text" id="lead-email" placeholder="ana@clinica.com">
-                </div>
-                <div class="form-group">
-                    <label for="lead-nicho">Nicho</label>
-                    <input type="text" id="lead-nicho" placeholder="Ex: Saúde">
-                </div>
-                <div class="form-group">
-                    <label for="lead-cidade">Cidade</label>
-                    <input type="text" id="lead-cidade" placeholder="Ex: Campos dos Goytacazes">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="lead-nicho">Nicho</label>
+                        <input type="text" id="lead-nicho" list="lista-nichos-options" placeholder="Ex: Saúde">
+                        <datalist id="lista-nichos-options"></datalist>
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-cidade">Cidade</label>
+                        <input type="text" id="lead-cidade" list="lista-cidades-options" placeholder="Ex: Campos dos Goytacazes">
+                        <datalist id="lista-cidades-options"></datalist>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="lead-solucao">Solução de Interesse *</label>
