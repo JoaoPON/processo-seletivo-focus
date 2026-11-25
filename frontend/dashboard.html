@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <title>Dashboard</title>
 </head>
 
@@ -319,6 +319,54 @@
                 <div class="modal-buttons">
                     <button type="button" class="list" id="close-new-lead-btn">Cancelar</button>
                     <button type="submit" class="new" id="submit-new-lead-btn">Salvar Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--sair-->
+    <div class="sair-link">
+        <a href="/logout">Sair</a>
+    </div>
+
+    <!--popup de gerenciar contas (aba Gerência)-->
+    <div class="conta-overlay" id="conta-overlay">
+        <div class="conta-modal">
+            <h2>Contas</h2>
+
+            <div class="conta-tabs">
+                <button type="button" class="conta-tab ativa" data-form="form-criar">Criar conta</button>
+                <button type="button" class="conta-tab" data-form="form-excluir">Excluir conta</button>
+            </div>
+
+            <form id="form-criar" class="conta-form">
+                <label>Nome
+                    <input type="text" id="criar-nome" required>
+                </label>
+                <label>Usuário
+                    <input type="text" id="criar-usuario" required>
+                </label>
+                <label>Senha (mínimo 6 caracteres)
+                    <input type="password" id="criar-senha" required minlength="6">
+                </label>
+                <p class="conta-msg" id="criar-msg"></p>
+                <div class="conta-botoes">
+                    <button type="button" class="list conta-fechar">Fechar</button>
+                    <button type="submit" class="new">Criar</button>
+                </div>
+            </form>
+
+            <form id="form-excluir" class="conta-form" hidden>
+                <label>Usuário da conta
+                    <input type="text" id="excluir-usuario" required>
+                </label>
+                <label>Senha da conta
+                    <input type="password" id="excluir-senha" required>
+                </label>
+                <p class="conta-msg" id="excluir-msg"></p>
+                <div class="conta-botoes">
+                    <button type="button" class="list conta-fechar">Fechar</button>
+                    <button type="submit" class="new">Excluir</button>
                 </div>
             </form>
         </div>
