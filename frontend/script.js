@@ -921,3 +921,99 @@ navButtons.forEach(btn => {
 // Inicialização
 
 Promise.all([carregarListas(), carregarLeads()]);
+
+// gerência: criar e excluir contas
+
+(function () {
+    const tela = document.getElementById("screen-adm");
+    if (!tela) return;
+
+    // botão dentro da aba gerência
+    const area = document.createElement("div");
+    area.className = "conta-area";
+    area.innerHTML = '<button type="button" class="new" id="abrir-contas">Gerenciar contas</button>';
+    tela.appendChild(area);
+
+    const overlay = document.getElementById("conta-overlay");
+    const abrir = () => overlay.classList.add("aberto");
+    const fechar = () => overlay.classList.remove("aberto");
+
+    document.getElementById("abrir-contas").addEventListener("click", abrir);
+    overlay.querySelectorAll(".conta-fechar").forEach((b) => b.addEventListener("click", fechar));
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) fechar(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") fechar(); });
+
+    // troca entre "Criar conta" e "Excluir conta"
+    overlay.querySelectorAll(".conta-tab").forEach((aba) => {
+        aba.addEventListener("click", () => {
+            overlay.querySelectorAll(".conta-tab").forEach((a) => a.classList.remove("ativa"));
+            aba.classList.add("ativa");
+            document.getElementById("form-criar").hidden = aba.dataset.form !== "form-criar";
+            document.getElementById("form-excluir").hidden = aba.dataset.form !== "form-excluir";
+        });
+    });
+
+    function mostrarMsg(el, texto, tipo) {
+        el.textContent = texto;
+        el.className = "conta-msg " + tipo;
+    }
+
+    async function enviarConta(url, corpo) {
+        const resp = await fetch(`${API_BASE}${url}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(corpo),
+        });
+        if (resp.status === 401) { window.location.href = "/"; return null; }
+        let dados = {};
+        try { dados = await resp.json(); } catch {}
+        const detalhe = typeof dados.detail === "string"
+            ? dados.detail : "Preencha todos os campos corretamente.";
+        return { ok: resp.ok, detalhe };
+    }
+
+    document.getElementById("form-criar").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById("criar-msg");
+        mostrarMsg(msg, "", "");
+        try {
+            const r = await enviarConta("/contas", {
+                nome: document.getElementById("criar-nome").value,
+                usuario: document.getElementById("criar-usuario").value,
+                senha: document.getElementById("criar-senha").value,
+            });
+            if (!r) return;
+            if (r.ok) {
+                e.target.reset();
+                mostrarMsg(msg, "Conta criada com sucesso!", "ok");
+            } else {
+                mostrarMsg(msg, r.detalhe, "erro");
+            }
+        } catch {
+            mostrarMsg(msg, "Não foi possível conectar ao servidor.", "erro");
+        }
+    });
+
+    document.getElementById("form-excluir").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const msg = document.getElementById("excluir-msg");
+        mostrarMsg(msg, "", "");
+        const usuario = document.getElementById("excluir-usuario").value;
+        if (!confirm("Excluir a conta '" + usuario + "'? Isso não pode ser desfeito.")) return;
+        try {
+            const r = await enviarConta("/contas/excluir", {
+                usuario: usuario,
+                senha: document.getElementById("excluir-senha").value,
+            });
+            if (!r) return;
+            if (r.ok) {
+                e.target.reset();
+                mostrarMsg(msg, "Conta excluída.", "ok");
+            } else {
+                mostrarMsg(msg, r.detalhe, "erro");
+            }
+        } catch {
+            mostrarMsg(msg, "Não foi possível conectar ao servidor.", "erro");
+        }
+    });
+})();

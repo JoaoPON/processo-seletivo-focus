@@ -9,8 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import backend.sheets as sheets
 from backend.processamento_ia import processar_ia_do_lead
+from backend.login import router as login_router
 
 app = FastAPI(title="PS-Focus")
+
+app.include_router(login_router)
 
 logger = logging.getLogger(__name__)
 

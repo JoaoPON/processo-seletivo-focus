@@ -11,7 +11,7 @@
 <body>
     <!--container do login-->
     <main class="container">
-        <form action="dashboard.html">
+        <form id="form-login">
             <h1>Login Perry</h1>
             <div class="input-box">
                 <input placeholder="Usuário" type="text" name="user" id="user">
@@ -31,6 +31,7 @@
                 <a href="#">Esqueci senha</a>
             </div>
 
+            <p id="erro" style="color: red;"></p>
             <button type="submit" class="login">Login</button>
         </form>
     </main>
@@ -41,7 +42,31 @@
             const campo = document.getElementById("password");
             campo.type = campo.type === "password" ? "text" : "password";
         }
+
+        document.getElementById("form-login").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const erro = document.getElementById("erro");
+            erro.textContent = "";
+
+            try {
+                const resp = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user: document.getElementById("user").value,
+                        password: document.getElementById("password").value,
+                    }),
+                });
+
+                if (resp.ok) {
+                    window.location.href = "/dashboard.html";
+                } else {
+                    const dados = await resp.json();
+                    erro.textContent = dados.detail || "Erro ao fazer login";
+                }
+            } catch {
+                erro.textContent = "Não foi possível conectar ao servidor.";
+            }
+        });
     </script>
 </body>
-
-</html>
