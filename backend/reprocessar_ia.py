@@ -1,28 +1,30 @@
 import sys
 
-from backend.sheets import obter_lead
+from backend.sheets import listar_leads, obter_lead
 from backend.processamento_ia import processar_ia_do_lead
 
 
-if len(sys.argv) != 2:
-    print("Uso: python -m backend.reprocessar_ia UUID")
-    sys.exit(1)
+def reprocessar_erros():
+    for lead in listar_leads():
+        if lead.get("id") and lead.get("status_ia") == "Erro":
+            processar_ia_do_lead(lead["id"])
 
-lead_id = sys.argv[1]
 
-lead = obter_lead(lead_id)
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Uso: python -m backend.reprocessar_ia UUID")
+        sys.exit(1)
 
-if lead is None:
-    print("Lead não encontrado.")
+    lead_id = sys.argv[1]
+    lead = obter_lead(lead_id)
 
-elif lead["status_ia"] != "Erro":
-    print("Este lead não está com status de erro.")
-
-else:
-    sucesso = processar_ia_do_lead(lead_id)
-
-    if sucesso:
-        print("Lead reprocessado com sucesso!")
+    if lead is None:
+        print("Lead não encontrado.")
+    elif lead["status_ia"] != "Erro":
+        print("Este lead não está com status de erro.")
     else:
-        print("Não foi possível reprocessar o lead.")
-
+        sucesso = processar_ia_do_lead(lead_id)
+        if sucesso:
+            print("Lead reprocessado com sucesso!")
+        else:
+            print("Não foi possível reprocessar o lead.")

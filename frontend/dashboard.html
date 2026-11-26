@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/leads.css">
+    <link rel="stylesheet" href="css/agendamentos.css">
+    <link rel="stylesheet" href="css/gerencia.css">
     <title>Dashboard</title>
 </head>
 
@@ -30,9 +33,13 @@
             <span>Agendamentos</span>
         </button>
 
-        <button class="navbar-btn" data-tab="adm">
+        <button class="navbar-btn" data-tab="adm" id="nav-btn-adm">
             <span>Gerência</span>
         </button>
+
+        <div class="navbar-user-area">
+            <a href="/logout" class="navbar-logout-btn">Sair</a>
+        </div>
     </nav>
 
     <div class="main-layout" id="main-layout">
@@ -422,7 +429,65 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Modal Gerenciar Contas (Criar / Excluir Usuários) -->
+    <div class="conta-overlay" id="conta-overlay">
+        <div class="conta-modal">
+            <div class="conta-top">
+                <div class="conta-tabs">
+                    <button type="button" class="conta-tab ativa" data-form="form-criar">Criar conta</button>
+                    <button type="button" class="conta-tab" data-form="form-excluir">Excluir conta</button>
+                </div>
+                <button type="button" class="conta-fechar" title="Fechar">&times;</button>
+            </div>
+
+            <form id="form-criar" class="modal-form">
+                <div class="form-group">
+                    <label for="criar-nome">Nome completo (SDR / Membro) *</label>
+                    <input type="text" id="criar-nome" required placeholder="Ex: Júlia">
+                </div>
+                <div class="form-group">
+                    <label for="criar-usuario">Usuário de login *</label>
+                    <input type="text" id="criar-usuario" required placeholder="Ex: julia">
+                </div>
+                <div class="form-group">
+                    <label for="criar-cargo">Perfil de acesso *</label>
+                    <select id="criar-cargo" required>
+                        <option value="sdr">SDR</option>
+                        <option value="gerencia">Gerência</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="criar-senha">Senha da nova conta (mín. 6 caracteres) *</label>
+                    <input type="password" id="criar-senha" required minlength="6">
+                </div>
+                <p id="criar-msg" class="conta-msg"></p>
+                <div class="modal-buttons">
+                    <button type="button" class="list conta-fechar">Cancelar</button>
+                    <button type="submit" class="new">Criar Conta</button>
+                </div>
+            </form>
+
+            <form id="form-excluir" class="modal-form" hidden>
+                <div class="form-group">
+                    <label for="excluir-usuario">Selecionar conta *</label>
+                    <select id="excluir-usuario" required>
+                        <option value="">Carregando contas...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="excluir-senha">Confirme com a sua senha *</label>
+                    <input type="password" id="excluir-senha" required placeholder="Digite a sua senha de acesso">
+                </div>
+                <p id="excluir-msg" class="conta-msg"></p>
+                <div class="modal-buttons">
+                    <button type="button" class="list conta-fechar">Cancelar</button>
+                    <button type="submit" class="new" style="background-color: #dc2626; border-color: #dc2626; color: #fff;">Excluir Conta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
 
 </body>
 
